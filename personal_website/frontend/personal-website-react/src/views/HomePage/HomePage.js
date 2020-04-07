@@ -1,10 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
 import ProductHeroLayout from './ProductHeroLayout';
 import Avatar from '@material-ui/core/Avatar';
+import { makeStyles } from '@material-ui/core/styles';
 
 
 const backgroundImage =
@@ -13,7 +13,7 @@ const backgroundImage =
 const profileImage = 
   "https://scontent-iad3-1.xx.fbcdn.net/v/t1.0-9/57204003_10218197652830778_2031492275145539584_n.jpg?_nc_cat=111&_nc_sid=85a577&_nc_ohc=bQN6WrkwJZgAX_RM_17&_nc_ht=scontent-iad3-1.xx&oh=8d8a593b8da30b4a2651eec1d574dcb4&oe=5EAE3885"
 
-const styles = (theme) => ({
+const useStyles = makeStyles(theme => ({
   background: {
     backgroundImage: `url(${backgroundImage})`,
     backgroundColor: '#7fc7d9', // Average color of the background image.
@@ -43,10 +43,10 @@ const styles = (theme) => ({
     width: theme.spacing(30),
     height: theme.spacing(30),
   },
-});
+}));
 
-function ProductHero(props) {
-  const { classes } = props;
+export default function HomePage() {
+  const classes = useStyles();
 
   return (
     <ProductHeroLayout backgroundClassName={classes.background}>
@@ -66,8 +66,4 @@ function ProductHero(props) {
   );
 }
 
-ProductHero.propTypes = {
-  classes: PropTypes.object.isRequired,
-};
 
-export default withStyles(styles)(ProductHero);

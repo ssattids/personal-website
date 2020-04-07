@@ -1,9 +1,14 @@
 import React, {Fragement} from 'react';
 import ReactDOM from 'react-dom';
-import NavBar from './components/NavBar';
 import Helmet from 'react-helmet';
 import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles';
+
+import { HashRouter as Router, Route, Switch } from 'react-router-dom';
+
 import HomePage from './views/HomePage';
+import NavBar from './components/NavBar';
+import ExperienceView from './views/ExperienceView';
+
 
 const App = () => {
 
@@ -17,13 +22,19 @@ const App = () => {
 
   return(
     <div>
-      <Helmet>
+      {/* <Helmet>
         <style>{'body { background-color: #000000; }'}</style>
-      </Helmet>
+      </Helmet> */}
 
+      
       <ThemeProvider theme={theme}>
-        <NavBar />
-        <HomePage />
+        <Router>
+          <NavBar />
+          <Switch>
+            <Route exact path="/" component={HomePage}/>
+            <Route exact path="/experience" component={ExperienceView}/>
+          </Switch>
+        </Router>
       </ThemeProvider>
     </div>
   )
