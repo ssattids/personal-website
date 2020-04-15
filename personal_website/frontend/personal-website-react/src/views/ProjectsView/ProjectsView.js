@@ -28,29 +28,18 @@ export default function Experience() {
       <Card className={classes.root}>
           <CardMedia
             className={classes.media}
-            image="https://media.baumpub.com/files/slides/locale_image/full/0157/39029_en_1f624_41610_schneider-electriclogo.jpg"
+            image="https://raw.githubusercontent.com/clankster99/NN_project/master/SemanticSegmentation.png"
             title="Contemplative Reptile"
           />
           <CardContent>
             <Typography gutterBottom variant="h5" component="h2">
-              Schneider Electric
+              Neural Networks and Vision
             </Typography>
             <Typography variant="body2" color="textSecondary" component="p">
-              - Worked with terabyte scale data from cloud connected IoT devices, selected Spark and Parquet files to analyze data after running benchmarks
+              - Used Deep Convolution Neural Networks, specifically implemented Fully Connected Nets architecture for semantic segmentation, transfer learning, and used Google satellite imagery to determine traffic levels by detecting roads and cars
             </Typography>
             <Typography variant="body2" color="textSecondary" component="p">
-              - Set-up data pipelines and managed several tables for our team and other teams using Spark and Azure
-Data Bricks
-            </Typography>
-            <Typography variant="body2" color="textSecondary" component="p">
-              - Worked on time series models for event prediction
-            </Typography>
-            <Typography variant="body2" color="textSecondary" component="p">
-              - Created a dashboard using modern web technologies React and Django to give views into data
-            </Typography>
-            <Typography variant="body2" color="textSecondary" component="p">
-              - Created NER (named entity recognition) model that classified customer reviews on our products based on
-categories defined by business, out-performing previous approach
+              - Applications include finding faster routes through traffic and helping authorities manage traffic and plan infrastructure spending
             </Typography>
           </CardContent>
         <CardActions>
@@ -66,12 +55,12 @@ categories defined by business, out-performing previous approach
       <Card className={classes.root}>
           <CardMedia
             className={classes.media}
-            image="https://mma.prnewswire.com/media/389973/Olympus_Logo.jpg?p=publish"
+            image="https://opennmt.net/simple-attn.png"
             title="Contemplative Reptile"
           />
           <CardContent>
             <Typography gutterBottom variant="h5" component="h2">
-              Olympus
+              Neural Machine Translation
             </Typography>
             <Typography variant="body2" color="textSecondary" component="p">
               - Worked with Chief Product Scientist to implement various Machine Learning algorithms for X-ray scanners

@@ -8,7 +8,9 @@ import { HashRouter as Router, Route, Switch } from 'react-router-dom';
 import HomePage from './views/HomePage';
 import NavBar from './components/NavBar';
 import ExperienceView from './views/ExperienceView';
-
+import ProjectView from './views/ProjectsView';
+import EducationView from './views/EducationView';
+import BlogView from './views/BlogView';
 
 const App = () => {
 
@@ -33,6 +35,9 @@ const App = () => {
           <Switch>
             <Route exact path="/" component={HomePage}/>
             <Route exact path="/experience" component={ExperienceView}/>
+            <Route exact path="/projects" component={ProjectView}/>
+            <Route exact path="/education" component={EducationView}/>
+            <Route exact path="/blog" component={BlogView}/>
           </Switch>
         </Router>
       </ThemeProvider>

@@ -40,9 +40,21 @@ export default function NavBar() {
               Experience
             </Link>
           </Button>
-          <Button color="inherit">Projects</Button>
-          <Button color="inherit">Education</Button>
-          <Button color="inherit">Blog</Button>
+          <Button color="inherit">
+            <Link to="/projects" style={{ color: 'inherit', textDecoration: 'inherit' }}>
+              Projects
+            </Link>
+          </Button>
+          <Button color="inherit">
+            <Link to="/education" style={{ color: 'inherit', textDecoration: 'inherit' }}>
+              Education
+            </Link>
+          </Button>
+          <Button color="inherit">
+            <Link to="/blog" style={{ color: 'inherit', textDecoration: 'inherit' }}>
+              Blog
+            </Link>
+          </Button>
         </Toolbar>
       </AppBar>
     </div>
