@@ -3,7 +3,7 @@ import { motion } from "motion/react"
 import { ArrowLeft, ArrowRight } from "lucide-react"
 import { Link, Navigate, useParams } from "react-router"
 
-import { experience } from "@/data/content"
+import { experience, techLinks } from "@/data/content"
 import { OrgLogo } from "@/components/org-logo"
 import { Panel } from "@/components/panel"
 import { RoleVisual } from "@/components/role-visual"
@@ -44,16 +44,21 @@ export function ExperiencePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           >
-            <div className="mt-10 flex items-center gap-5">
-              <OrgLogo src={role.logo} name={role.company} className="size-16 rounded-xl" />
-              <RoleVisual kind={role.visual} />
+            {/* the visuals are drawn at a fixed 40px height, so scale them up rather than resizing each one */}
+            <div className="mt-10 flex h-24 items-center justify-center sm:h-32">
+              <div className="scale-[2] sm:scale-[3]">
+                <RoleVisual kind={role.visual} />
+              </div>
             </div>
+            <OrgLogo src={role.logo} name={role.company} url={role.url} className="mt-10 size-16 rounded-xl" />
             <p className="mt-6 font-mono text-xs tracking-widest text-muted-foreground uppercase">
               {role.period} · {role.duration}
             </p>
             <h1 className="mt-3 text-4xl font-semibold tracking-tight text-balance sm:text-6xl">{role.title}</h1>
             <p className="mt-2 text-2xl tracking-[-0.02em] text-muted-foreground">{role.company}</p>
-            <p className="mt-6 text-lg text-muted-foreground">{role.summary}</p>
+            <p className="mt-6 text-lg text-muted-foreground">
+              <LinkedText text={role.summary} />
+            </p>
 
             {role.metrics && (
               <div className="mt-8 flex flex-wrap gap-3">
@@ -71,7 +76,9 @@ export function ExperiencePage() {
               {role.points.map((p) => (
                 <li key={p} className="flex gap-3 py-4 leading-relaxed">
                   <span className="mt-2.5 size-1 shrink-0 rounded-full bg-foreground" />
-                  {p}
+                  <span>
+                    <LinkedText text={p} />
+                  </span>
                 </li>
               ))}
             </ul>
@@ -125,5 +132,34 @@ export function ExperiencePage() {
         </div>
       </Panel>
     </main>
+  )
+}
+
+// longest names first so a longer name wins over one it contains
+const techPattern = new RegExp(
+  `\\b(${Object.keys(techLinks)
+    .sort((a, b) => b.length - a.length)
+    .map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+    .join("|")})\\b`,
+  "g"
+)
+
+// Turns every tool named in `text` into a link to its homepage.
+function LinkedText({ text }: { text: string }) {
+  // split with a capture group keeps the matches at odd indexes
+  return text.split(techPattern).map((part, i) =>
+    i % 2 ? (
+      <a
+        key={i}
+        href={techLinks[part]}
+        target="_blank"
+        rel="noreferrer"
+        className="underline decoration-muted-foreground/50 underline-offset-4 transition-colors hover:decoration-foreground"
+      >
+        {part}
+      </a>
+    ) : (
+      part
+    )
   )
 }
