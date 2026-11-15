@@ -1,7 +1,8 @@
 import { useEffect } from "react"
-import { Copy, CornerDownRight, Mail, Moon, Sparkles } from "lucide-react"
+import { Copy, CornerDownRight, FileText, Mail, Moon, Sparkles } from "lucide-react"
+import { useNavigate } from "react-router"
 
-import { SECTIONS, TOKEN_RAIN_EVENT } from "@/lib/sections"
+import { PAGES, SECTIONS, TOKEN_RAIN_EVENT } from "@/lib/sections"
 import { useGoToSection } from "@/hooks/use-go-to-section"
 import { profile } from "@/data/content"
 import { useTheme } from "@/components/theme-provider"
@@ -21,6 +22,7 @@ import {
 export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const { theme, setTheme } = useTheme()
   const goToSection = useGoToSection()
+  const navigate = useNavigate()
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -45,7 +47,15 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
         <CommandInput placeholder="Type a command or search…" />
         <CommandList>
           <CommandEmpty>No results.</CommandEmpty>
-          <CommandGroup heading="Navigate">
+          <CommandGroup heading="Pages">
+            {PAGES.map((p) => (
+              <CommandItem key={p.path} onSelect={run(() => navigate(p.path))}>
+                <FileText />
+                {p.label}
+              </CommandItem>
+            ))}
+          </CommandGroup>
+          <CommandGroup heading="About">
             {SECTIONS.map((s) => (
               <CommandItem key={s.id} onSelect={run(() => goToSection(s.id))}>
                 <CornerDownRight />

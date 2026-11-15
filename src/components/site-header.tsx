@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react"
 import { motion, useScroll, useSpring } from "motion/react"
 import { Command } from "lucide-react"
-import { useLocation } from "react-router"
+import { Link, useLocation } from "react-router"
 
-import { SECTIONS } from "@/lib/sections"
+import { PAGES } from "@/lib/sections"
 import { useGoToSection } from "@/hooks/use-go-to-section"
 import { cn } from "@/lib/utils"
 import { ThemeToggle } from "@/components/theme-toggle"
@@ -11,35 +11,20 @@ import { Button } from "@/components/ui/button"
 import { Kbd } from "@/components/ui/kbd"
 
 export function SiteHeader({ onOpenPalette }: { onOpenPalette: () => void }) {
-  const [active, setActive] = useState<string | null>(null)
   const [scrolled, setScrolled] = useState(false)
   const { scrollYProgress } = useScroll()
   const progress = useSpring(scrollYProgress, { stiffness: 200, damping: 40 })
   const { pathname } = useLocation()
   const goToSection = useGoToSection()
+  // role pages belong to About
+  const active = PAGES.find((p) => p.path !== "/" && pathname.startsWith(p.path))?.path ?? "/"
 
   useEffect(() => {
-    setActive(null)
     const onScroll = () => setScrolled(window.scrollY > 40)
     onScroll()
     window.addEventListener("scroll", onScroll, { passive: true })
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) if (e.isIntersecting) setActive(e.target.id)
-      },
-      { rootMargin: "-45% 0px -50% 0px" },
-    )
-    for (const s of SECTIONS) {
-      const el = document.getElementById(s.id)
-      if (el) observer.observe(el)
-    }
-    return () => {
-      window.removeEventListener("scroll", onScroll)
-      observer.disconnect()
-    }
-    // sections only exist on the homepage, so re-observe after every page change
-  }, [pathname])
+    return () => window.removeEventListener("scroll", onScroll)
+  }, [])
 
   return (
     <>
@@ -66,22 +51,18 @@ export function SiteHeader({ onOpenPalette }: { onOpenPalette: () => void }) {
             SS
           </a>
           <ul className="hidden items-center md:flex">
-            {SECTIONS.map((s) => (
-              <li key={s.id} className="relative">
-                <a
-                  href={`/#${s.id}`}
-                  onClick={(e) => {
-                    e.preventDefault()
-                    goToSection(s.id)
-                  }}
+            {PAGES.map((p) => (
+              <li key={p.path} className="relative">
+                <Link
+                  to={p.path}
                   className={cn(
                     "relative z-10 block rounded-full px-3 py-1.5 text-sm transition-colors",
-                    active === s.id ? "text-foreground" : "text-muted-foreground hover:text-foreground",
+                    active === p.path ? "text-foreground" : "text-muted-foreground hover:text-foreground",
                   )}
                 >
-                  {s.label}
-                </a>
-                {active === s.id && (
+                  {p.label}
+                </Link>
+                {active === p.path && (
                   <motion.span
                     layoutId="nav-active"
                     className="absolute inset-0 rounded-full bg-accent"

@@ -1,8 +1,6 @@
 import { useEffect } from "react"
 import { useLocation } from "react-router"
 
-import { Blog } from "@/sections/blog"
-import { Contact } from "@/sections/contact"
 import { Education } from "@/sections/education"
 import { Experience } from "@/sections/experience"
 import { Hero } from "@/sections/hero"
@@ -11,7 +9,7 @@ import { Skills } from "@/sections/skills"
 import { Stats } from "@/sections/stats"
 import { TrainingRun } from "@/sections/training-run"
 
-export function HomePage() {
+export function AboutPage() {
   const { hash } = useLocation()
 
   // arriving from another page with a #section: jump straight to it
@@ -33,8 +31,6 @@ export function HomePage() {
       <Skills />
       <Projects />
       <Education />
-      <Blog />
-      <Contact />
     </main>
   )
 }

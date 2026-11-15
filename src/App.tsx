@@ -8,8 +8,10 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { TokenRain } from "@/components/token-rain"
 import { Toaster } from "@/components/ui/sonner"
 import { Kbd } from "@/components/ui/kbd"
+import { AboutPage } from "@/pages/about"
+import { BlogPage } from "@/pages/blog"
+import { ContactPage } from "@/pages/contact"
 import { ExperiencePage } from "@/pages/experience"
-import { HomePage } from "@/pages/home"
 
 export default function App() {
   const [paletteOpen, setPaletteOpen] = useState(false)
@@ -20,9 +22,11 @@ export default function App() {
         <BrowserRouter>
           <SiteHeader onOpenPalette={() => setPaletteOpen(true)} />
           <Routes>
-            <Route path="/" element={<HomePage />} />
+            <Route path="/" element={<AboutPage />} />
+            <Route path="/blog" element={<BlogPage />} />
+            <Route path="/contact" element={<ContactPage />} />
             <Route path="/experience/:id" element={<ExperiencePage />} />
-            <Route path="*" element={<HomePage />} />
+            <Route path="*" element={<AboutPage />} />
           </Routes>
           <footer className="p-2 pt-0">
             <div className="dark mx-auto flex flex-col items-center justify-between gap-3 rounded-3xl bg-background px-6 py-8 font-mono text-xs text-muted-foreground sm:flex-row sm:px-10 dark:ring-1 dark:ring-white/10">
