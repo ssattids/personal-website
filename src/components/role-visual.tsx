@@ -3,13 +3,13 @@ import { DeviceDashboard } from "@/components/device-dashboard"
 import { DocPipeline } from "@/components/doc-pipeline"
 import { EntityTagger } from "@/components/entity-tagger"
 import { IotPipeline } from "@/components/iot-pipeline"
-import { Waveform } from "@/components/waveform"
+import { VoiceCall } from "@/components/voice-call"
 
 // Small animation shown next to the logo on a role page, one per role.
 export function RoleVisual({ kind }: { kind: Role["visual"] }) {
   switch (kind) {
     case "voice":
-      return <Waveform className="h-10" bars={24} />
+      return <VoiceCall />
     case "docs":
       return <DocPipeline />
     case "ner":
