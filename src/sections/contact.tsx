@@ -33,7 +33,7 @@ export async function copyEmail() {
   }
 }
 
-export function Contact() {
+export function Contact({ className }: { className?: string }) {
   const ref = useRef<HTMLDivElement>(null)
   const inView = useInView(ref, { once: true, margin: "-120px" })
   const [shown, setShown] = useState(0)
@@ -47,7 +47,7 @@ export function Contact() {
   }, [inView, shown, lines])
 
   return (
-    <Panel id="contact" backdrop="beam">
+    <Panel id="contact" backdrop="beam" className={className}>
       <div className="mx-auto max-w-4xl px-6 py-28">
         <SectionHeading
           index="07"

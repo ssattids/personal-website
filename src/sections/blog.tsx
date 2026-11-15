@@ -8,11 +8,11 @@ import { SectionHeading } from "@/components/section-heading"
 import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
 
-export function Blog() {
+export function Blog({ className }: { className?: string }) {
   const published = posts.filter((p) => p.url).length
 
   return (
-    <Panel id="blog">
+    <Panel id="blog" className={className}>
       <div className="mx-auto max-w-5xl px-6 py-28">
         <SectionHeading
           index="06"

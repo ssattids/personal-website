@@ -3,7 +3,13 @@ A personal website built for experience and research
 
 Built with React, Vite, Tailwind CSS, [shadcn/ui](https://ui.shadcn.com), and [Motion](https://motion.dev). Frontend only — all content lives in `src/data/content.ts`.
 
-## What's on the page
+## Pages
+
+- **About** (`/`) — everything below, plus education
+- **Blog** (`/blog`) — posts, published and drafting
+- **Contact** (`/contact`) — a terminal that types out how to reach me
+
+## What's on About
 
 - **Hero** — a live agent-graph canvas (nodes, edges, signal pulses that follow your cursor)
 - **Experience** — scroll-linked timeline; each role's "Learn more" opens its own page at `/experience/:id`
@@ -24,5 +30,5 @@ Add more shadcn components with `npx shadcn@latest add <component>`.
 
 ## Deploying
 
-Role pages use client-side routes (`/experience/:id`), so the host must serve
+Pages use client-side routes (`/blog`, `/contact`, `/experience/:id`), so the host must serve
 `index.html` for unknown paths (an SPA fallback / rewrite rule).
