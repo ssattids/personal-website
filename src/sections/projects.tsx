@@ -76,7 +76,19 @@ function TiltCard({ project }: { project: Project }) {
         </div>
         <CardHeader className="relative">
           <p className="font-mono text-xs text-muted-foreground">
-            {project.where} · {project.when}
+            {project.whereUrl ? (
+              <a
+                href={project.whereUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="underline decoration-muted-foreground/50 underline-offset-4 transition-colors hover:decoration-foreground"
+              >
+                {project.where}
+              </a>
+            ) : (
+              project.where
+            )}{" "}
+            · {project.when}
           </p>
           <CardTitle className="text-lg">{project.title}</CardTitle>
           <CardDescription className="leading-relaxed">{project.description}</CardDescription>

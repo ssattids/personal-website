@@ -114,7 +114,7 @@ function TimelineItem({ role, side }: { role: Role; side: "left" | "right" }) {
               {role.period} · {role.duration}
             </p>
             <div className="flex items-center gap-3">
-              <OrgLogo src={role.logo} name={role.company} />
+              <OrgLogo src={role.logo} name={role.company} url={role.url} />
               <div>
                 <h3 className="text-lg leading-tight font-semibold tracking-tight">{role.title}</h3>
                 <p className="text-sm text-signal-1">{role.company}</p>

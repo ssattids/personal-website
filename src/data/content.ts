@@ -26,11 +26,34 @@ export type Role = {
   stack: string[]
   metrics?: { value: string; label: string }[]
   logo?: string
+  // company homepage, opened from the logo
+  url?: string
   // one-liner shown as a pill on the timeline card
   status: string
   current?: boolean
   // little animation shown next to the logo on the role page
   visual?: "voice" | "docs" | "ner" | "iot" | "fleet"
+}
+
+// homepages for tools named in a role's text; each mention is linked on the role page
+export const techLinks: Record<string, string> = {
+  LangGraph: "https://www.langchain.com/langgraph",
+  LiveKit: "https://livekit.io",
+  OpenTelemetry: "https://opentelemetry.io",
+  Python: "https://www.python.org",
+  FastAPI: "https://fastapi.tiangolo.com",
+  React: "https://react.dev",
+  "scikit-learn": "https://scikit-learn.org",
+  Docker: "https://www.docker.com",
+  flairNLP: "https://github.com/flairNLP/flair",
+  PyTorch: "https://pytorch.org",
+  "AWS OCR": "https://aws.amazon.com/textract/",
+  Spark: "https://spark.apache.org",
+  spaCy: "https://spacy.io",
+  Hive: "https://hive.apache.org",
+  Databricks: "https://www.databricks.com",
+  Azure: "https://azure.microsoft.com",
+  Django: "https://www.djangoproject.com",
 }
 
 export const experience: Role[] = [
@@ -42,6 +65,7 @@ export const experience: Role[] = [
     title: "Senior Data Scientist",
     company: "Liberate AI",
     logo: "/logos/liberate_inc_logo.jpeg",
+    url: "https://www.liberate.ai/",
     period: "2025 – 2026",
     duration: "1 yr",
     summary:
@@ -64,6 +88,7 @@ export const experience: Role[] = [
     title: "Staff Data Scientist",
     company: "Gradient AI",
     logo: "/logos/gradientai_logo.jpeg",
+    url: "https://www.gradientai.com/",
     period: "2024 – 2025",
     duration: "1 yr 4 mo",
     summary:
@@ -86,6 +111,7 @@ export const experience: Role[] = [
     title: "Senior Data Scientist",
     company: "Gradient AI",
     logo: "/logos/gradientai_logo.jpeg",
+    url: "https://www.gradientai.com/",
     period: "2021 – 2023",
     duration: "3 yrs",
     summary:
@@ -105,6 +131,7 @@ export const experience: Role[] = [
     title: "Data Scientist",
     company: "Schneider Electric",
     logo: "/logos/schneider_electric_logo.jpeg",
+    url: "https://www.se.com/",
     period: "2020 – 2021",
     duration: "1 yr 4 mo",
     summary:
@@ -128,6 +155,7 @@ export const experience: Role[] = [
     title: "Data Science Software Engineer",
     company: "Schneider Electric",
     logo: "/logos/schneider_electric_logo.jpeg",
+    url: "https://www.se.com/",
     period: "2019 – 2020",
     duration: "1 yr 1 mo",
     summary:
@@ -165,6 +193,7 @@ export const experience: Role[] = [
     title: "Analyst",
     company: "iQuartic",
     logo: "/logos/iquartic_llc_logo.jpeg",
+    url: "https://iquartic.com/",
     period: "2014 – 2015",
     duration: "1 yr",
     summary:
@@ -181,6 +210,8 @@ export type Project = {
   id: string
   title: string
   where: string
+  // homepage for `where`, when it's an organization
+  whereUrl?: string
   when: string
   description: string
   stack: string[]
@@ -202,6 +233,7 @@ export const projects: Project[] = [
     id: "olympus",
     title: "Machine Learning Research Intern",
     where: "Olympus",
+    whereUrl: "https://www.olympus-global.com/",
     when: "May – Aug 2018",
     description:
       "Experimented with decision trees, linear regression, SVMs, random forests, and other ensembles, improving accuracy from 70% to over 98% and outperforming the existing statistical approach.",
