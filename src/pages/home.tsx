@@ -1,36 +1,40 @@
-import { Link } from "react-router-dom"
-import { ArrowRight } from "lucide-react"
+import { useEffect } from "react"
+import { useLocation } from "react-router"
 
-import { profile } from "@/data/content"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
+import { Blog } from "@/sections/blog"
+import { Contact } from "@/sections/contact"
+import { Education } from "@/sections/education"
+import { Experience } from "@/sections/experience"
+import { Hero } from "@/sections/hero"
+import { Projects } from "@/sections/projects"
+import { Skills } from "@/sections/skills"
+import { Stats } from "@/sections/stats"
+import { TrainingRun } from "@/sections/training-run"
 
 export function HomePage() {
-  const initials = profile.name
-    .split(" ")
-    .map((part) => part[0])
-    .join("")
+  const { hash } = useLocation()
+
+  // arriving from another page with a #section: jump straight to it
+  useEffect(() => {
+    document.title = "Salar Satti · Data Scientist"
+    const el = hash && document.getElementById(hash.slice(1))
+    if (el) el.scrollIntoView({ behavior: "instant", block: "start" })
+    else window.scrollTo({ top: 0, behavior: "instant" })
+    // only on mount: in-page navigation scrolls on its own
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
-    <section className="mx-auto flex min-h-[calc(100svh-3.5rem)] max-w-4xl flex-col items-center justify-center gap-6 px-4 text-center">
-      <Avatar className="size-40">
-        <AvatarFallback className="text-4xl">{initials}</AvatarFallback>
-      </Avatar>
-      <div className="space-y-2">
-        <h1 className="text-5xl font-bold tracking-tight">{profile.name}</h1>
-        <p className="text-xl text-muted-foreground">{profile.role}</p>
-      </div>
-      <p className="max-w-md text-muted-foreground">{profile.tagline}</p>
-      <div className="flex gap-3">
-        <Button asChild>
-          <Link to="/experience">
-            View experience <ArrowRight />
-          </Link>
-        </Button>
-        <Button asChild variant="outline">
-          <Link to="/projects">Projects</Link>
-        </Button>
-      </div>
-    </section>
+    <main>
+      <Hero />
+      <Stats />
+      <Experience />
+      <TrainingRun />
+      <Skills />
+      <Projects />
+      <Education />
+      <Blog />
+      <Contact />
+    </main>
   )
 }
