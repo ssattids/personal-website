@@ -364,6 +364,15 @@ export type Post = {
 
 export const posts: Post[] = [
   {
+    slug: "negative-log-likelihood",
+    title: "Negative log-likelihood",
+    summary: "Why training minimizes −ln of a probability, and how cross entropy and squared error fall out of it.",
+    tags: ["ML fundamentals", "loss functions"],
+    date: "Nov 2026",
+    readingTime: "5 min",
+    url: "/notes/negative-log-likelihood",
+  },
+  {
     slug: "cross-entropy-loss",
     title: "Cross entropy loss",
     summary: "Why a confident wrong answer costs 22× more than a confident right one, with curves you can drag.",

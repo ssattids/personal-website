@@ -1,10 +1,24 @@
-import { useState, type ReactNode } from "react"
+import { useState } from "react"
 import { motion } from "motion/react"
 
-import { cn } from "@/lib/utils"
 import { FunctionPlot, PlotLegend, type PlotSeries } from "@/components/function-plot"
-import { Tex } from "@/components/tex"
 import { Card } from "@/components/ui/card"
+import {
+  Accordion,
+  Bullets,
+  Components,
+  Figure,
+  Formula,
+  H2,
+  M,
+  NoteLink,
+  Readout,
+  Slider,
+  SubBullets,
+  texColor,
+  texNote,
+  Toggle,
+} from "@/notes/parts"
 
 // label 1 is warm, label 0 is cool, everywhere on the page
 const POS = "var(--signal-1)"
@@ -30,21 +44,29 @@ export function CrossEntropyNote() {
       />
 
       <H2>The formula, piece by piece</H2>
-      <Bullets
+      <Formula tex={FORMULA} />
+      <Components
         items={[
           <>
-            For one example with <M>{"M"}</M> classes, take the probability the model gave the right class and score
-            it with <M>{"-\\ln"}</M>.
+            <M>{"\\mathcal{L}"}</M> = total loss over the dataset
           </>,
           <>
-            Binary classification is the <M>{"M = 2"}</M> case.
+            <M>{"N"}</M> = total number of samples
           </>,
           <>
-            Write it out and add it up over <M>{"N"}</M> examples:
+            <M>{"i"}</M> = index of the current sample, from <M>{"1"}</M> to <M>{"N"}</M>
+          </>,
+          <>
+            <M>{"y_i"}</M> = true label of sample <M>{"i"}</M>, either <M>{"0"}</M> or <M>{"1"}</M>
+          </>,
+          <>
+            <M>{"p_i"}</M> = predicted probability that sample <M>{"i"}</M> is class <M>{"1"}</M>
+          </>,
+          <>
+            <M>{"\\ln"}</M> = natural log, so <M>{"-\\ln"}</M> grows as the probability shrinks
           </>,
         ]}
       />
-      <Formula />
 
       <H2>Loss contributions, visualized</H2>
       <Bullets
@@ -76,6 +98,44 @@ export function CrossEntropyNote() {
       />
       <ExampleGrid />
 
+      <H2>Cross entropy with M classes</H2>
+      <Bullets
+        items={[
+          <>
+            The binary formula is the <M>{"M = 2"}</M> case of this one.
+          </>,
+        ]}
+      />
+      <Formula tex={MULTI_FORMULA} />
+      <Components
+        items={[
+          <>
+            <M>{"M"}</M> = total number of classes
+          </>,
+          <>
+            <M>{"j"}</M> = index of the current class, from <M>{"1"}</M> to <M>{"M"}</M>
+          </>,
+          <>
+            <M>{"y_{ij}"}</M> = <M>{"1"}</M> if sample <M>{"i"}</M> belongs to class <M>{"j"}</M>, otherwise{" "}
+            <M>{"0"}</M>
+          </>,
+          <>
+            <M>{"p_{ij}"}</M> = predicted probability that sample <M>{"i"}</M> is class <M>{"j"}</M>
+          </>,
+          <>
+            <M>{"\\mathcal{L}"}</M>, <M>{"N"}</M>, <M>{"i"}</M> and <M>{"\\ln"}</M> mean the same as above
+          </>,
+        ]}
+      />
+      <Bullets
+        items={[
+          <>
+            Only the true class has <M>{"y_{ij} = 1"}</M>, so each sample still costs{" "}
+            <M>{"-\\ln"}</M> of the probability given to the right class.
+          </>,
+        ]}
+      />
+
       <H2>Takeaways</H2>
       <Bullets
         items={[
@@ -84,6 +144,43 @@ export function CrossEntropyNote() {
           "Use the natural log. ln(0.9) ≈ −0.105, but log₁₀(0.9) ≈ −0.046, a different number.",
         ]}
       />
+
+      <H2>FAQ</H2>
+      <div className="mt-4 space-y-3">
+        <Accordion title="Why the natural log?">
+          <SubBullets
+            items={[
+              <>
+                It gives clean derivatives: <M>{"\\tfrac{d}{dp} \\ln(p) = \\tfrac{1}{p}"}</M>, so with softmax or sigmoid the
+                gradient on the logits is exactly <M>{"p - y"}</M>.
+              </>,
+              <>
+                Softmax and sigmoid are built from <M>{"e^x"}</M>, and <M>{"\\ln(e^x) = x"}</M>, which lets libraries
+                compute the loss straight from logits in a numerically stable way.
+              </>,
+              <>
+                Cross entropy is the <NoteLink to="/notes/negative-log-likelihood">negative log-likelihood</NoteLink>,
+                and statistics writes likelihoods with ln.
+              </>,
+              "PyTorch, TensorFlow and scikit-learn all use ln, so your numbers match everyone else's.",
+              <>
+                Why not <M>{"\\log_2"}</M>?
+                <SubBullets
+                  items={[
+                    <>
+                      The base only rescales the loss:{" "}
+                      <M>{"\\log_2(p) = \\ln(p) / \\ln(2) \\approx 1.443 \\cdot \\ln(p)"}</M>.
+                    </>,
+                    "Every loss is multiplied by the same constant, so the best model and the ranking of models stay the same.",
+                    "What changes is the units, and the gradients scale by the same 1.443, like a slightly bigger learning rate.",
+                    "log₂ is the information theory choice: it measures the loss in bits instead of nats, e.g. bits-per-character for language models.",
+                  ]}
+                />
+              </>,
+            ]}
+          />
+        </Accordion>
+      </div>
     </>
   )
 }
@@ -182,115 +279,27 @@ function ExampleGrid() {
 }
 
 // the summation formula with each part labelled underneath, like an annotated textbook figure
-const color = (c: string, tex: string) => `\\htmlStyle{color: ${c}}{${tex}}`
-const note = (text: string) => `\\htmlStyle{color: var(--muted-foreground); font-family: var(--font-sans)}{\\text{${text}}}`
 const FORMULA = [
-  `\\underbrace{\\mathop{\\Large\\sum}\\limits_{i=1}^{N}}_{${note("sum over examples")}}`,
+  `\\mathcal{L} =`,
+  `\\underbrace{\\mathop{\\Large\\sum}\\limits_{i=1}^{N}}_{${texNote("sum over examples")}}`,
   `-\\Bigg[\\,`,
-  `\\underbrace{${color(POS, "y_i")}}_{${note("label")}}`,
-  `\\underbrace{\\ln p_i}_{${note("prob of class 1")}}`,
+  `\\underbrace{${texColor(POS, "y_i")}}_{${texNote("label")}}`,
+  `\\underbrace{\\ln(p_i)}_{${texNote("prob of class 1")}}`,
   `+`,
-  `\\underbrace{${color(NEG, "(1 - y_i)")}}_{${note("1 − label")}}`,
-  `\\underbrace{\\ln(1 - p_i)}_{${note("prob of class 0")}}`,
+  `\\underbrace{${texColor(NEG, "(1 - y_i)")}}_{${texNote("1 − label")}}`,
+  `\\underbrace{\\ln(1 - p_i)}_{${texNote("prob of class 0")}}`,
   `\\,\\Bigg]`,
 ].join(" \\, ")
 
-function Formula() {
-  return (
-    <Figure>
-      <Tex display className="text-[0.7rem] sm:text-xl">
-        {FORMULA}
-      </Tex>
-      <div className="mt-4 flex flex-wrap items-center justify-center gap-x-3 border-t pt-4 text-sm text-muted-foreground">
-        <span>general form, M classes:</span>
-        <Tex className="text-lg text-foreground">{"\\displaystyle \\sum_{j=1}^{M} -y_j \\ln p(y_j)"}</Tex>
-        <span>· the bracket above is the M = 2 case</span>
-      </div>
-    </Figure>
-  )
-}
-
-function Toggle<T extends number>({
-  value,
-  onChange,
-  options,
-}: {
-  value: T
-  onChange: (v: T) => void
-  options: { value: T; label: string; color: string }[]
-}) {
-  return (
-    <div className="inline-flex rounded-full border bg-muted/40 p-1 font-mono text-xs">
-      {options.map((o) => (
-        <button
-          key={o.value}
-          type="button"
-          onClick={() => onChange(o.value)}
-          className={cn(
-            "flex items-center gap-2 rounded-full px-3 py-1.5 transition-colors",
-            value === o.value ? "bg-background text-foreground shadow" : "text-muted-foreground hover:text-foreground",
-          )}
-        >
-          <span className="size-2 rounded-full" style={{ background: o.color }} />
-          {o.label}
-        </button>
-      ))}
-    </div>
-  )
-}
-
-function Slider({ value, onChange, label }: { value: number; onChange: (v: number) => void; label: string }) {
-  return (
-    <label className="mt-3 flex items-center gap-4 font-mono text-xs text-muted-foreground">
-      <span className="w-24 shrink-0">{label}</span>
-      <input
-        type="range"
-        min={0.01}
-        max={0.99}
-        step={0.01}
-        value={value}
-        onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full accent-[var(--signal-1)]"
-      />
-      <span className="w-10 text-right text-foreground">{value.toFixed(2)}</span>
-    </label>
-  )
-}
-
-function Figure({ caption, children }: { caption?: string; children: ReactNode }) {
-  return (
-    <figure className="mt-6">
-      <Card className="gap-0 p-5 sm:p-6">{children}</Card>
-      {caption && <figcaption className="mt-2 text-xs text-muted-foreground">{caption}</figcaption>}
-    </figure>
-  )
-}
-
-function Readout({ children }: { children: ReactNode }) {
-  return (
-    <div className="mt-4 flex flex-wrap items-baseline gap-x-2 gap-y-1 rounded-lg border bg-muted/40 px-4 py-3 font-mono text-sm">
-      {children}
-    </div>
-  )
-}
-
-function Bullets({ items }: { items: ReactNode[] }) {
-  return (
-    <ul className="mt-4 space-y-3 text-muted-foreground">
-      {items.map((t, i) => (
-        <li key={i} className="flex gap-3 leading-relaxed">
-          <span className="mt-2.5 size-1 shrink-0 rounded-full bg-foreground" />
-          <span>{t}</span>
-        </li>
-      ))}
-    </ul>
-  )
-}
-
-function H2({ children }: { children: ReactNode }) {
-  return <h2 className="mt-16 text-2xl first:mt-0 font-semibold tracking-tight sm:text-3xl">{children}</h2>
-}
-
-function M({ children }: { children: string }) {
-  return <Tex className="text-foreground">{children}</Tex>
-}
+const MULTI_FORMULA = [
+  `\\mathcal{L} =`,
+  `\\underbrace{\\mathop{\\Large\\sum}\\limits_{i=1}^{N}}_{${texNote("sum over examples")}}`,
+  `\\Bigg(\\,`,
+  `\\underbrace{\\mathop{\\normalsize\\sum}\\limits_{j=1}^{M}}_{${texNote("sum over classes")}}`,
+  `\\bigg(\\,`,
+  `-`,
+  `\\underbrace{${texColor(POS, "y_{ij}")}}_{${texNote("label")}}`,
+  `\\underbrace{\\ln(p_{ij})}_{${texNote("prob of class j")}}`,
+  `\\,\\bigg)`,
+  `\\,\\Bigg)`,
+].join(" \\, ")
