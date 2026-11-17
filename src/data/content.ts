@@ -365,7 +365,7 @@ export type Post = {
 export const posts: Post[] = [
   {
     slug: "cross-entropy-loss",
-    title: "Cross entropy loss, drawn out",
+    title: "Cross entropy loss",
     summary: "Why a confident wrong answer costs 22× more than a confident right one, with curves you can drag.",
     tags: ["ML fundamentals", "loss functions"],
     date: "Nov 2026",
