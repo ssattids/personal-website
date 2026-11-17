@@ -4,7 +4,7 @@ import { Blog } from "@/sections/blog"
 
 export function BlogPage() {
   useEffect(() => {
-    document.title = "Blog · Salar Satti"
+    document.title = "Notes · Salar Satti"
     window.scrollTo({ top: 0, behavior: "instant" })
   }, [])
 

@@ -278,8 +278,6 @@ export type Degree = {
   where: string
   when: string
   detail: string
-  courses: string[]
-  gpa?: string
   logo?: string
 }
 
@@ -290,18 +288,7 @@ export const education: Degree[] = [
     degree: "MS Computer Science (AI focus)",
     where: "Amherst, MA",
     when: "2017 – 2019",
-    gpa: "3.7",
-    detail: "Plus a research project on probabilistic models.",
-    courses: [
-      "Machine Learning",
-      "Advanced Algorithms",
-      "Artificial Intelligence",
-      "Data Visualization",
-      "UI",
-      "Neural Networks",
-      "Mathematical Statistics",
-      "Deep Learning for NLP",
-    ],
+    detail: "Algorithms, AI, and deep neural networks for images and text.",
   },
   {
     school: "University of Liverpool",
@@ -309,15 +296,7 @@ export const education: Degree[] = [
     degree: "BA Business Economics",
     where: "Liverpool, UK",
     when: "2011 – 2014",
-    detail: "Where the love of numbers started.",
-    courses: [
-      "Mathematics",
-      "Statistics for Economics",
-      "Micro & Macro",
-      "Managerial Economics",
-      "Operations",
-      "International Business",
-    ],
+    detail: "Where the love of technology started.",
   },
 ]
 
@@ -376,13 +355,23 @@ export type Post = {
   title: string
   summary: string
   tags: string[]
-  // set date + url when a post goes live; until then it shows as a draft
+  // set date + url when a post goes live; until then it shows as a draft.
+  // a url starting with / is a note on this site
   date?: string
   readingTime?: string
   url?: string
 }
 
 export const posts: Post[] = [
+  {
+    slug: "cross-entropy-loss",
+    title: "Cross entropy loss, drawn out",
+    summary: "Why a confident wrong answer costs 22× more than a confident right one, with curves you can drag.",
+    tags: ["ML fundamentals", "loss functions"],
+    date: "Nov 2026",
+    readingTime: "5 min",
+    url: "/notes/cross-entropy-loss",
+  },
   {
     slug: "long-horizon-voice-agents",
     title: "Keeping voice agents on track for 20-minute calls",
