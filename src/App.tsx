@@ -12,6 +12,7 @@ import { AboutPage } from "@/pages/about"
 import { BlogPage } from "@/pages/blog"
 import { ContactPage } from "@/pages/contact"
 import { ExperiencePage } from "@/pages/experience"
+import { NotePage } from "@/pages/note"
 
 export default function App() {
   const [paletteOpen, setPaletteOpen] = useState(false)
@@ -24,6 +25,7 @@ export default function App() {
           <Routes>
             <Route path="/" element={<AboutPage />} />
             <Route path="/blog" element={<BlogPage />} />
+            <Route path="/notes/:slug" element={<NotePage />} />
             <Route path="/contact" element={<ContactPage />} />
             <Route path="/experience/:id" element={<ExperiencePage />} />
             <Route path="*" element={<AboutPage />} />

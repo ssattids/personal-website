@@ -1,5 +1,6 @@
 import { motion } from "motion/react"
 import { ArrowUpRight, PenLine } from "lucide-react"
+import { Link } from "react-router"
 
 import { posts, type Post } from "@/data/content"
 import { cn } from "@/lib/utils"
@@ -48,7 +49,13 @@ export function Blog({ className }: { className?: string }) {
 
 function PostRow({ post, index }: { post: Post; index: number }) {
   const live = Boolean(post.url)
-  const Row = live ? "a" : "div"
+  const internal = post.url?.startsWith("/")
+  const Row = internal ? Link : live ? "a" : "div"
+  const linkProps = internal
+    ? { to: post.url! }
+    : live
+      ? { href: post.url, target: "_blank", rel: "noreferrer" }
+      : {}
 
   return (
     <motion.li
@@ -58,7 +65,7 @@ function PostRow({ post, index }: { post: Post; index: number }) {
       transition={{ delay: index * 0.08 }}
     >
       <Row
-        {...(live ? { href: post.url, target: "_blank", rel: "noreferrer" } : {})}
+        {...(linkProps as { to: string })}
         className={cn(
           "group grid gap-2 px-5 py-5 sm:grid-cols-[8rem_1fr_auto] sm:items-start sm:gap-6",
           live && "transition-colors hover:bg-accent/50",

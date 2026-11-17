@@ -16,8 +16,10 @@ export function SiteHeader({ onOpenPalette }: { onOpenPalette: () => void }) {
   const progress = useSpring(scrollYProgress, { stiffness: 200, damping: 40 })
   const { pathname } = useLocation()
   const goToSection = useGoToSection()
-  // role pages belong to About
-  const active = PAGES.find((p) => p.path !== "/" && pathname.startsWith(p.path))?.path ?? "/"
+  // role pages belong to About, single notes to the notes list
+  const active = pathname.startsWith("/notes/")
+    ? "/blog"
+    : (PAGES.find((p) => p.path !== "/" && pathname.startsWith(p.path))?.path ?? "/")
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40)
