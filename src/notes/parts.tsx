@@ -9,11 +9,30 @@ import { Card } from "@/components/ui/card"
 // building blocks shared by the notes: prose, formulas, and figure controls
 
 export const texColor = (c: string, tex: string) => `\\htmlStyle{color: ${c}}{${tex}}`
+// a "\n" in the text stacks it, so a long label doesn't widen a narrow symbol like Σ
 export const texNote = (text: string) =>
-  `\\htmlStyle{color: var(--muted-foreground); font-family: var(--font-sans)}{\\text{${text}}}`
+  `\\htmlStyle{color: var(--muted-foreground); font-family: var(--font-sans)}{\\substack{${text
+    .split("\n")
+    .map((l) => `\\text{${l}}`)
+    .join("\\\\")}}}`
 
 export function H2({ children }: { children: ReactNode }) {
   return <h2 className="mt-16 text-2xl first:mt-0 font-semibold tracking-tight sm:text-3xl">{children}</h2>
+}
+
+// spaced-out section with a "§ 01" counter above the title
+export function Section({ children }: { children: ReactNode }) {
+  return (
+    <section
+      className={cn(
+        "mt-12 [counter-increment:note-sec] first:mt-0 sm:mt-16",
+        "[&>h2]:before:mb-3 [&>h2]:before:block [&>h2]:before:font-mono [&>h2]:before:text-xs [&>h2]:before:font-normal [&>h2]:before:tracking-widest [&>h2]:before:text-muted-foreground",
+        "[&>h2]:before:[content:'§_'_counter(note-sec,decimal-leading-zero)]",
+      )}
+    >
+      {children}
+    </section>
+  )
 }
 
 export function Bullets({ items }: { items: ReactNode[] }) {
