@@ -13,7 +13,6 @@ import {
   Section,
   M,
   NoteLink,
-  Readout,
   Slider,
   SubBullets,
   texColor,
@@ -48,7 +47,7 @@ export function CrossEntropyNote() {
 
       <Section>
         <H2>The formula, piece by piece</H2>
-        <Formula tex={FORMULA} />
+        <Formula tex={FORMULA} animate />
         <Components
           items={[
             <>
@@ -85,7 +84,6 @@ export function CrossEntropyNote() {
               If the label is <M>{"0"}</M>, it is <M>{"-\\ln(1 - p)"}</M>.
             </>,
             "Both curves are 0 when the model is exactly right and climb to infinity as it becomes certain of the wrong answer.",
-            "Drag the slider or hover over the chart.",
           ]}
         />
         <BinaryExplorer />
@@ -116,7 +114,7 @@ export function CrossEntropyNote() {
             </>,
           ]}
         />
-        <Formula tex={MULTI_FORMULA} />
+        <Formula tex={MULTI_FORMULA} animate />
         <Components
           items={[
             <>
@@ -208,15 +206,7 @@ function BinaryExplorer() {
 
   return (
     <Figure caption="Binary cross entropy against the predicted probability p, for each true label.">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <Toggle
-          value={label}
-          onChange={setLabel}
-          options={[
-            { value: 1, label: "true label = 1", color: POS },
-            { value: 0, label: "true label = 0", color: NEG },
-          ]}
-        />
+      <div className="flex justify-end">
         <PlotLegend series={[lossIfOne, lossIfZero]} />
       </div>
       <FunctionPlot
@@ -231,16 +221,33 @@ function BinaryExplorer() {
         yLabel="loss"
         markers={[{ x: p, y: loss, color, label: loss.toFixed(3) }]}
       />
-      <Slider value={p} onChange={setP} label="p" />
-      <Readout>
-        <span>
-          −[{label}·ln({p.toFixed(2)}) + {1 - label}·ln(1 − {p.toFixed(2)})]
-        </span>
-        <span className="text-muted-foreground">=</span>
-        <span className="text-lg font-medium" style={{ color }}>
-          {loss.toFixed(3)}
-        </span>
-      </Readout>
+      {/* widen the slider's label column to match the "true label" row, so both controls line up */}
+      <div className="mt-4 rounded-lg border bg-muted/40 px-4 py-3 [&_label>span:first-child]:w-40">
+        <p className="font-mono text-xs tracking-widest text-muted-foreground uppercase">Inputs</p>
+        <div className="mt-3 flex items-center gap-4 font-mono text-xs text-muted-foreground">
+          <span className="w-40 shrink-0">true label</span>
+          <Toggle
+            value={label}
+            onChange={setLabel}
+            options={[
+              { value: 1, label: "1", color: POS },
+              { value: 0, label: "0", color: NEG },
+            ]}
+          />
+        </div>
+        <Slider value={p} onChange={setP} label="predicted probability" color={color} />
+        <p className="mt-3 border-t pt-3 font-mono text-xs tracking-widest text-muted-foreground uppercase">Output</p>
+        <div className="mt-3 flex flex-wrap items-baseline gap-x-2 gap-y-1 font-mono text-sm">
+          <span className="text-muted-foreground">loss =</span>
+          <span>
+            −[{label}·ln({p.toFixed(2)}) + {1 - label}·ln(1 − {p.toFixed(2)})]
+          </span>
+          <span className="text-muted-foreground">=</span>
+          <span className="text-lg font-medium" style={{ color }}>
+            {loss.toFixed(3)}
+          </span>
+        </div>
+      </div>
     </Figure>
   )
 }

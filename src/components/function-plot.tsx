@@ -203,9 +203,9 @@ export function FunctionPlot({
           <p className="text-muted-foreground">x = {hoverX.toFixed(2)}</p>
           {readout.map((s) => (
             <p key={s.label} className="mt-1 flex items-center gap-2 whitespace-nowrap">
-              <span className="h-0.5 w-3 rounded-full" style={{ background: s.color }} />
+              <span className="text-muted-foreground">{s.label} =</span>
               <span className="font-medium text-foreground">{formatValue(s.fn(hoverX))}</span>
-              <span className="text-muted-foreground">{s.label}</span>
+              <span className="h-0.5 w-3 rounded-full" style={{ background: s.color }} />
             </p>
           ))}
         </div>
