@@ -25,7 +25,7 @@ export function NotePage() {
   return (
     <main>
       <Panel backdrop="beam" className="min-h-svh">
-        <article className="mx-auto max-w-3xl px-6 pt-32 pb-28">
+        <article className="mx-auto max-w-[52rem] px-6 pt-32 pb-28">
           <Button variant="ghost" size="sm" className="-ml-3 rounded-full text-muted-foreground" asChild>
             <Link to="/blog">
               <ArrowLeft /> All notes

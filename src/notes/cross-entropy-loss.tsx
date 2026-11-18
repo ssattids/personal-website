@@ -10,6 +10,7 @@ import {
   Figure,
   Formula,
   H2,
+  Section,
   M,
   NoteLink,
   Readout,
@@ -33,154 +34,168 @@ const lossIfZero: PlotSeries = { label: "y = 0: −ln(1 − p)", fn: (p) => -ln(
 export function CrossEntropyNote() {
   return (
     <>
-      <H2>Background</H2>
-      <Bullets
-        items={[
-          "Cross entropy, also called log loss, is how a classifier gets scored.",
-          "The model gives a probability, we check it against what actually happened, and the loss tells us how surprised the model should be.",
-          "A confident right answer costs almost nothing.",
-          "A confident wrong answer costs a lot.",
-        ]}
-      />
+      <Section>
+        <H2>Background</H2>
+        <Bullets
+          items={[
+            "Cross entropy, also called log loss, is how a classifier gets scored.",
+            "The model gives a probability, we check it against what actually happened, and the loss tells us how surprised the model should be.",
+            "A confident right answer costs almost nothing.",
+            "A confident wrong answer costs a lot.",
+          ]}
+        />
+      </Section>
 
-      <H2>The formula, piece by piece</H2>
-      <Formula tex={FORMULA} />
-      <Components
-        items={[
-          <>
-            <M>{"\\mathcal{L}"}</M> = total loss over the dataset
-          </>,
-          <>
-            <M>{"N"}</M> = total number of samples
-          </>,
-          <>
-            <M>{"i"}</M> = index of the current sample, from <M>{"1"}</M> to <M>{"N"}</M>
-          </>,
-          <>
-            <M>{"y_i"}</M> = true label of sample <M>{"i"}</M>, either <M>{"0"}</M> or <M>{"1"}</M>
-          </>,
-          <>
-            <M>{"p_i"}</M> = predicted probability that sample <M>{"i"}</M> is class <M>{"1"}</M>
-          </>,
-          <>
-            <M>{"\\ln"}</M> = natural log, so <M>{"-\\ln"}</M> grows as the probability shrinks
-          </>,
-        ]}
-      />
+      <Section>
+        <H2>The formula, piece by piece</H2>
+        <Formula tex={FORMULA} />
+        <Components
+          items={[
+            <>
+              <M>{"\\mathcal{L}"}</M> = total loss over the dataset
+            </>,
+            <>
+              <M>{"N"}</M> = total number of samples
+            </>,
+            <>
+              <M>{"i"}</M> = index of the current sample, from <M>{"1"}</M> to <M>{"N"}</M>
+            </>,
+            <>
+              <M>{"y_i"}</M> = true label of sample <M>{"i"}</M>, either <M>{"0"}</M> or <M>{"1"}</M>
+            </>,
+            <>
+              <M>{"p_i"}</M> = predicted probability that sample <M>{"i"}</M> is class <M>{"1"}</M>
+            </>,
+            <>
+              <M>{"\\ln"}</M> = natural log, so <M>{"-\\ln"}</M> grows as the probability shrinks
+            </>,
+          ]}
+        />
+      </Section>
 
-      <H2>Loss contributions, visualized</H2>
-      <Bullets
-        items={[
-          "Only one term is ever turned on.",
-          <>
-            If the label is <M>{"1"}</M>, the loss is <M>{"-\\ln(p)"}</M>.
-          </>,
-          <>
-            If the label is <M>{"0"}</M>, it is <M>{"-\\ln(1 - p)"}</M>.
-          </>,
-          "Both curves are 0 when the model is exactly right and climb to infinity as it becomes certain of the wrong answer.",
-          "Drag the slider or hover over the chart.",
-        ]}
-      />
-      <BinaryExplorer />
+      <Section>
+        <H2>Loss contributions, visualized</H2>
+        <Bullets
+          items={[
+            "Only one term is ever turned on.",
+            <>
+              If the label is <M>{"1"}</M>, the loss is <M>{"-\\ln(p)"}</M>.
+            </>,
+            <>
+              If the label is <M>{"0"}</M>, it is <M>{"-\\ln(1 - p)"}</M>.
+            </>,
+            "Both curves are 0 when the model is exactly right and climb to infinity as it becomes certain of the wrong answer.",
+            "Drag the slider or hover over the chart.",
+          ]}
+        />
+        <BinaryExplorer />
+      </Section>
 
-      <H2>Example situations visualized</H2>
-      <Bullets
-        items={[
-          "The same two curves cover every binary case.",
-          <>
-            A 0.9 on the right answer costs <M>{"0.105"}</M>.
-          </>,
-          <>
-            A 0.9 on the wrong answer costs <M>{"2.303"}</M>, about 22× more.
-          </>,
-        ]}
-      />
-      <ExampleGrid />
+      <Section>
+        <H2>Example situations visualized</H2>
+        <Bullets
+          items={[
+            "The same two curves cover every binary case.",
+            <>
+              A 0.9 on the right answer costs <M>{"0.105"}</M>.
+            </>,
+            <>
+              A 0.9 on the wrong answer costs <M>{"2.303"}</M>, about 22× more.
+            </>,
+          ]}
+        />
+        <ExampleGrid />
+      </Section>
 
-      <H2>Cross entropy with M classes</H2>
-      <Bullets
-        items={[
-          <>
-            The binary formula is the <M>{"M = 2"}</M> case of this one.
-          </>,
-        ]}
-      />
-      <Formula tex={MULTI_FORMULA} />
-      <Components
-        items={[
-          <>
-            <M>{"M"}</M> = total number of classes
-          </>,
-          <>
-            <M>{"j"}</M> = index of the current class, from <M>{"1"}</M> to <M>{"M"}</M>
-          </>,
-          <>
-            <M>{"y_{ij}"}</M> = <M>{"1"}</M> if sample <M>{"i"}</M> belongs to class <M>{"j"}</M>, otherwise{" "}
-            <M>{"0"}</M>
-          </>,
-          <>
-            <M>{"p_{ij}"}</M> = predicted probability that sample <M>{"i"}</M> is class <M>{"j"}</M>
-          </>,
-          <>
-            <M>{"\\mathcal{L}"}</M>, <M>{"N"}</M>, <M>{"i"}</M> and <M>{"\\ln"}</M> mean the same as above
-          </>,
-        ]}
-      />
-      <Bullets
-        items={[
-          <>
-            Only the true class has <M>{"y_{ij} = 1"}</M>, so each sample still costs{" "}
-            <M>{"-\\ln"}</M> of the probability given to the right class.
-          </>,
-        ]}
-      />
+      <Section>
+        <H2>Cross entropy with M classes</H2>
+        <Bullets
+          items={[
+            <>
+              The binary formula is the <M>{"M = 2"}</M> case of this one.
+            </>,
+          ]}
+        />
+        <Formula tex={MULTI_FORMULA} />
+        <Components
+          items={[
+            <>
+              <M>{"M"}</M> = total number of classes
+            </>,
+            <>
+              <M>{"j"}</M> = index of the current class, from <M>{"1"}</M> to <M>{"M"}</M>
+            </>,
+            <>
+              <M>{"y_{ij}"}</M> = <M>{"1"}</M> if sample <M>{"i"}</M> belongs to class <M>{"j"}</M>, otherwise{" "}
+              <M>{"0"}</M>
+            </>,
+            <>
+              <M>{"p_{ij}"}</M> = predicted probability that sample <M>{"i"}</M> is class <M>{"j"}</M>
+            </>,
+            <>
+              <M>{"\\mathcal{L}"}</M>, <M>{"N"}</M>, <M>{"i"}</M> and <M>{"\\ln"}</M> mean the same as above
+            </>,
+          ]}
+        />
+        <Bullets
+          items={[
+            <>
+              Only the true class has <M>{"y_{ij} = 1"}</M>, so each sample still costs{" "}
+              <M>{"-\\ln"}</M> of the probability given to the right class.
+            </>,
+          ]}
+        />
+      </Section>
 
-      <H2>Takeaways</H2>
-      <Bullets
-        items={[
-          "Loss = −ln(probability the model gave the truth). Everything else is bookkeeping.",
-          "It's asymmetric on purpose: being confidently wrong costs far more than being unsure.",
-          "Use the natural log. ln(0.9) ≈ −0.105, but log₁₀(0.9) ≈ −0.046, a different number.",
-        ]}
-      />
+      <Section>
+        <H2>Takeaways</H2>
+        <Bullets
+          items={[
+            "Loss = −ln(probability the model gave the truth). Everything else is bookkeeping.",
+            "It's asymmetric on purpose: being confidently wrong costs far more than being unsure.",
+            "Use the natural log. ln(0.9) ≈ −0.105, but log₁₀(0.9) ≈ −0.046, a different number.",
+          ]}
+        />
+      </Section>
 
-      <H2>FAQ</H2>
-      <div className="mt-4 space-y-3">
-        <Accordion title="Why the natural log?">
-          <SubBullets
-            items={[
-              <>
-                It gives clean derivatives: <M>{"\\tfrac{d}{dp} \\ln(p) = \\tfrac{1}{p}"}</M>, so with softmax or sigmoid the
-                gradient on the logits is exactly <M>{"p - y"}</M>.
-              </>,
-              <>
-                Softmax and sigmoid are built from <M>{"e^x"}</M>, and <M>{"\\ln(e^x) = x"}</M>, which lets libraries
-                compute the loss straight from logits in a numerically stable way.
-              </>,
-              <>
-                Cross entropy is the <NoteLink to="/notes/negative-log-likelihood">negative log-likelihood</NoteLink>,
-                and statistics writes likelihoods with ln.
-              </>,
-              "PyTorch, TensorFlow and scikit-learn all use ln, so your numbers match everyone else's.",
-              <>
-                Why not <M>{"\\log_2"}</M>?
-                <SubBullets
-                  items={[
-                    <>
-                      The base only rescales the loss:{" "}
-                      <M>{"\\log_2(p) = \\ln(p) / \\ln(2) \\approx 1.443 \\cdot \\ln(p)"}</M>.
-                    </>,
-                    "Every loss is multiplied by the same constant, so the best model and the ranking of models stay the same.",
-                    "What changes is the units, and the gradients scale by the same 1.443, like a slightly bigger learning rate.",
-                    "log₂ is the information theory choice: it measures the loss in bits instead of nats, e.g. bits-per-character for language models.",
-                  ]}
-                />
-              </>,
-            ]}
-          />
-        </Accordion>
-      </div>
+      <Section>
+        <H2>FAQ</H2>
+        <div className="mt-4 space-y-3">
+          <Accordion title="Why the natural log?">
+            <SubBullets
+              items={[
+                <>
+                  It gives clean derivatives: <M>{"\\tfrac{d}{dp} \\ln(p) = \\tfrac{1}{p}"}</M>, so with softmax or sigmoid the
+                  gradient on the logits is exactly <M>{"p - y"}</M>.
+                </>,
+                <>
+                  Softmax and sigmoid are built from <M>{"e^x"}</M>, and <M>{"\\ln(e^x) = x"}</M>, which lets libraries
+                  compute the loss straight from logits in a numerically stable way.
+                </>,
+                <>
+                  Cross entropy is the <NoteLink to="/notes/negative-log-likelihood">negative log-likelihood</NoteLink>,
+                  and statistics writes likelihoods with ln.
+                </>,
+                "PyTorch, TensorFlow and scikit-learn all use ln, so your numbers match everyone else's.",
+                <>
+                  Why not <M>{"\\log_2"}</M>?
+                  <SubBullets
+                    items={[
+                      <>
+                        The base only rescales the loss:{" "}
+                        <M>{"\\log_2(p) = \\ln(p) / \\ln(2) \\approx 1.443 \\cdot \\ln(p)"}</M>.
+                      </>,
+                      "Every loss is multiplied by the same constant, so the best model and the ranking of models stay the same.",
+                      "What changes is the units, and the gradients scale by the same 1.443, like a slightly bigger learning rate.",
+                      "log₂ is the information theory choice: it measures the loss in bits instead of nats, e.g. bits-per-character for language models.",
+                    ]}
+                  />
+                </>,
+              ]}
+            />
+          </Accordion>
+        </div>
+      </Section>
     </>
   )
 }
@@ -281,7 +296,7 @@ function ExampleGrid() {
 // the summation formula with each part labelled underneath, like an annotated textbook figure
 const FORMULA = [
   `\\mathcal{L} =`,
-  `\\underbrace{\\mathop{\\Large\\sum}\\limits_{i=1}^{N}}_{${texNote("sum over examples")}}`,
+  `\\underbrace{\\mathop{\\Large\\sum}\\limits_{i=1}^{N}}_{${texNote("sum over\nexamples")}}`,
   `-\\Bigg[\\,`,
   `\\underbrace{${texColor(POS, "y_i")}}_{${texNote("label")}}`,
   `\\underbrace{\\ln(p_i)}_{${texNote("prob of class 1")}}`,
@@ -293,9 +308,9 @@ const FORMULA = [
 
 const MULTI_FORMULA = [
   `\\mathcal{L} =`,
-  `\\underbrace{\\mathop{\\Large\\sum}\\limits_{i=1}^{N}}_{${texNote("sum over examples")}}`,
+  `\\underbrace{\\mathop{\\Large\\sum}\\limits_{i=1}^{N}}_{${texNote("sum over\nexamples")}}`,
   `\\Bigg(\\,`,
-  `\\underbrace{\\mathop{\\normalsize\\sum}\\limits_{j=1}^{M}}_{${texNote("sum over classes")}}`,
+  `\\underbrace{\\mathop{\\normalsize\\sum}\\limits_{j=1}^{M}}_{${texNote("sum over\nclasses")}}`,
   `\\bigg(\\,`,
   `-`,
   `\\underbrace{${texColor(POS, "y_{ij}")}}_{${texNote("label")}}`,
