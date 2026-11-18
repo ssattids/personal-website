@@ -161,13 +161,15 @@ export function Toggle<T extends number>({
   value,
   onChange,
   options,
+  className,
 }: {
   value: T
   onChange: (v: T) => void
   options: { value: T; label: string; color: string }[]
+  className?: string
 }) {
   return (
-    <div className="inline-flex rounded-full border bg-muted/40 p-1 font-mono text-xs">
+    <div className={cn("inline-flex rounded-full border bg-muted/40 p-1 font-mono text-xs", className)}>
       {options.map((o) => (
         <button
           key={o.value}
