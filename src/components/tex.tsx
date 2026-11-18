@@ -9,8 +9,8 @@ export function Tex({ children, display = false, className }: { children: string
     displayMode: display,
     throwOnError: false,
     output: "html",
-    // only our own strings are rendered, and \htmlStyle is how they pick up theme colors
-    trust: (ctx) => ctx.command === "\\htmlStyle",
+    // only our own strings are rendered; \htmlStyle picks up theme colors, \htmlClass gives hooks for animation
+    trust: (ctx) => ctx.command === "\\htmlStyle" || ctx.command === "\\htmlClass",
   })
   return <span className={cn(display && "block overflow-x-auto overflow-y-hidden", className)} dangerouslySetInnerHTML={{ __html: html }} />
 }

@@ -1,4 +1,5 @@
-import type { ReactNode } from "react"
+import { useEffect, useLayoutEffect, useRef, type ReactNode } from "react"
+import { useInView, useReducedMotion } from "motion/react"
 import { ChevronDown } from "lucide-react"
 import { Link } from "react-router"
 
@@ -11,10 +12,10 @@ import { Card } from "@/components/ui/card"
 export const texColor = (c: string, tex: string) => `\\htmlStyle{color: ${c}}{${tex}}`
 // a "\n" in the text stacks it, so a long label doesn't widen a narrow symbol like Σ
 export const texNote = (text: string) =>
-  `\\htmlStyle{color: var(--muted-foreground); font-family: var(--font-sans)}{\\substack{${text
+  `\\htmlClass{tex-note}{\\htmlStyle{color: var(--muted-foreground); font-family: var(--font-sans)}{\\substack{${text
     .split("\n")
     .map((l) => `\\text{${l}}`)
-    .join("\\\\")}}}`
+    .join("\\\\")}}}}`
 
 export function H2({ children }: { children: ReactNode }) {
   return <h2 className="mt-16 text-2xl first:mt-0 font-semibold tracking-tight sm:text-3xl">{children}</h2>
@@ -90,18 +91,60 @@ export function M({ children }: { children: string }) {
 export function Figure({ caption, children }: { caption?: string; children: ReactNode }) {
   return (
     <figure className="mt-6">
-      <Card className="gap-0 p-5 sm:p-6">{children}</Card>
-      {caption && <figcaption className="mt-2 text-xs text-muted-foreground">{caption}</figcaption>}
+      <Card className="gap-0 p-5 sm:p-6">
+        {children}
+        {caption && <figcaption className="mt-4 text-right text-xs text-muted-foreground">{caption}</figcaption>}
+      </Card>
     </figure>
   )
 }
 
-export function Formula({ tex }: { tex: string }) {
+// `animate` keeps the symbols still and plays the annotations in left to right once the formula scrolls into view:
+// each underbrace stretches open from its centre, then its label rises in underneath
+export function Formula({ tex, animate = false }: { tex: string; animate?: boolean }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const inView = useInView(ref, { once: true, amount: 0.6 })
+  const reduce = useReducedMotion()
+  const play = animate && !reduce
+
+  // hide before first paint so the annotations don't flash in and then vanish
+  useLayoutEffect(() => {
+    if (play) ref.current!.querySelectorAll<HTMLElement>(".katex-stretchy, .tex-note").forEach((p) => (p.style.opacity = "0"))
+  }, [play])
+
+  useEffect(() => {
+    if (!play || !inView) return
+    const el = ref.current!
+    const braces = el.querySelectorAll<HTMLElement>(".katex-stretchy")
+    const notes = el.querySelectorAll<HTMLElement>(".tex-note")
+    const ease = "cubic-bezier(0.16, 1, 0.3, 1)"
+    braces.forEach((b, i) => {
+      b.style.opacity = ""
+      b.animate([{ transform: "scaleX(0)", opacity: 0 }, { transform: "scaleX(1)", opacity: 1 }], {
+        duration: 400,
+        delay: i * 110,
+        easing: ease,
+        fill: "backwards",
+      })
+    })
+    notes.forEach((n, i) => {
+      n.style.opacity = ""
+      n.animate([{ transform: "translateY(6px)", opacity: 0 }, { transform: "none", opacity: 1 }], {
+        duration: 400,
+        delay: i * 110 + 150,
+        easing: ease,
+        fill: "backwards",
+      })
+    })
+  }, [play, inView])
+
   return (
     <Figure>
-      <Tex display className="text-[0.7rem] sm:text-xl">
-        {tex}
-      </Tex>
+      <div ref={ref}>
+        <Tex display className="text-[0.7rem] sm:text-xl">
+          {tex}
+        </Tex>
+      </div>
     </Figure>
   )
 }
@@ -151,6 +194,7 @@ export function Slider({
   max = 0.99,
   step = 0.01,
   format = (v) => v.toFixed(2),
+  color = "var(--signal-1)",
 }: {
   value: number
   onChange: (v: number) => void
@@ -159,6 +203,7 @@ export function Slider({
   max?: number
   step?: number
   format?: (v: number) => string
+  color?: string
 }) {
   return (
     <label className="mt-3 flex items-center gap-4 font-mono text-xs text-muted-foreground">
@@ -170,7 +215,8 @@ export function Slider({
         step={step}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full accent-[var(--signal-1)]"
+        className="w-full"
+        style={{ accentColor: color }}
       />
       <span className="w-10 text-right text-foreground">{format(value)}</span>
     </label>
