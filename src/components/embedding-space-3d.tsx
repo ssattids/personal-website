@@ -21,6 +21,8 @@ const INTRO_MS = 1100
 const END_AZIMUTH = 0.75
 const END_ELEVATION = 0.38
 const AXIS = 3.2
+// a floor grid through the origin, one line per unit
+const GRID = Array.from({ length: 7 }, (_, i) => i - 3)
 
 // Draws labelled points in 3D with an orbit camera. When `play` turns on, the points fly out from the origin while the
 // camera swings round, then everything holds still until the reader drags.
@@ -157,6 +159,11 @@ function Scene({
           lineWidth={1}
         />
       ))}
+
+      {GRID.flatMap((k) => [
+        <Line key={`x${k}`} points={[[-3, 0, k], [3, 0, k]]} color={ink} transparent opacity={0.12} lineWidth={1} />,
+        <Line key={`z${k}`} points={[[k, 0, -3], [k, 0, 3]]} color={ink} transparent opacity={0.12} lineWidth={1} />,
+      ])}
 
       {done &&
         links.map(([a, b]) => (
