@@ -44,8 +44,8 @@ export function NotePage() {
             <h1 className="mt-3 text-4xl font-semibold tracking-tight text-balance sm:text-6xl">{post.title}</h1>
             <div className="mt-6 flex flex-wrap gap-1.5">
               {post.tags.map((t) => (
-                <Badge key={t} variant="secondary" className="font-mono text-[11px]">
-                  {t}
+                <Badge key={t} variant="secondary" className="font-mono text-[11px]" asChild>
+                  <Link to={`/blog?tag=${encodeURIComponent(t)}`}>{t}</Link>
                 </Badge>
               ))}
             </div>

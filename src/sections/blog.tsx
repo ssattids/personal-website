@@ -1,6 +1,6 @@
 import { motion } from "motion/react"
 import { ArrowUpRight, PenLine } from "lucide-react"
-import { Link } from "react-router"
+import { Link, useSearchParams } from "react-router"
 
 import { posts, type Post } from "@/data/content"
 import { cn } from "@/lib/utils"
@@ -9,8 +9,20 @@ import { SectionHeading } from "@/components/section-heading"
 import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
 
+// every tag in first-seen order, with how many posts carry it
+const tagCounts = posts.reduce((m, p) => {
+  p.tags.forEach((t) => m.set(t, (m.get(t) ?? 0) + 1))
+  return m
+}, new Map<string, number>())
+
 export function Blog({ className }: { className?: string }) {
-  const published = posts.filter((p) => p.url).length
+  // the active tag lives in the URL so a note's tag badges can link straight to a filtered list
+  const [params, setParams] = useSearchParams()
+  const tag = params.get("tag")
+  const shown = tag ? posts.filter((p) => p.tags.includes(tag)) : posts
+  const published = shown.filter((p) => p.url).length
+  const pick = (t: string | null) =>
+    setParams((q) => (t ? q.set("tag", t) : q.delete("tag"), q), { replace: true, preventScrollReset: true })
 
   return (
     <Panel id="blog" className={className}>
@@ -27,23 +39,47 @@ export function Blog({ className }: { className?: string }) {
           Writing about agents, evals, and data at scale. Some of it is still in the oven.
         </SectionHeading>
 
+        <div className="mb-4 flex flex-wrap gap-1.5">
+          <TagChip label="all" count={posts.length} active={!tag} onClick={() => pick(null)} />
+          {[...tagCounts].map(([t, n]) => (
+            <TagChip key={t} label={t} count={n} active={tag === t} onClick={() => pick(tag === t ? null : t)} />
+          ))}
+        </div>
+
         <Card className="overflow-hidden p-0">
           <div className="flex flex-wrap items-center justify-between gap-2 border-b px-4 py-2.5 font-mono text-xs text-muted-foreground">
             <span>
-              <span className="text-signal-3">$</span> ls -lt ~/blog/posts
+              <span className="text-signal-3">$</span> ls -lt ~/blog/posts{tag && ` | grep "${tag}"`}
             </span>
             <span>
-              {published} published · {posts.length - published} drafting
+              {published} published · {shown.length - published} drafting
             </span>
           </div>
           <ul className="divide-y">
-            {posts.map((post, i) => (
+            {shown.map((post, i) => (
               <PostRow key={post.slug} post={post} index={i} />
             ))}
           </ul>
         </Card>
       </div>
     </Panel>
+  )
+}
+
+function TagChip({ label, count, active, onClick }: { label: string; count: number; active: boolean; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={cn(
+        "flex items-center gap-1.5 rounded-full border px-3 py-1 font-mono text-[11px] transition-colors",
+        active ? "border-foreground bg-foreground text-background" : "text-muted-foreground hover:border-foreground/40 hover:text-foreground",
+      )}
+    >
+      {label}
+      <span className={active ? "text-background/60" : "text-muted-foreground/60"}>{count}</span>
+    </button>
   )
 }
 

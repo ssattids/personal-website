@@ -364,6 +364,24 @@ export type Post = {
 
 export const posts: Post[] = [
   {
+    slug: "embeddings",
+    title: "Embeddings",
+    summary: "Turning inputs into vectors where closeness means similarity, and the two ways to measure it.",
+    tags: ["ML fundamentals", "metric learning"],
+    date: "Nov 2026",
+    readingTime: "5 min",
+    url: "/notes/embeddings",
+  },
+  {
+    slug: "contrastive-loss",
+    title: "Contrastive loss",
+    summary: "How a network learns to pull same-class pairs together and push the rest past a margin.",
+    tags: ["ML fundamentals", "loss functions", "metric learning"],
+    date: "Nov 2026",
+    readingTime: "5 min",
+    url: "/notes/contrastive-loss",
+  },
+  {
     slug: "negative-log-likelihood",
     title: "Negative log-likelihood",
     summary: "Why training minimizes −ln of a probability, and how cross entropy and squared error fall out of it.",
