@@ -45,7 +45,7 @@ export function ContrastiveLossNote() {
           items={[
             <>
               Contrastive loss trains a network to map inputs to{" "}
-              <NoteLink to="/notes/embeddings">embeddings</NoteLink>, points in a space where distance means something.
+              <NoteLink to="/notes/embeddings">embeddings</NoteLink>.
             </>,
             "It scores pairs, not single samples: two inputs go through the same network and we look at how far apart they land.",
             "Pairs from the same class should land close together.",
