@@ -11,8 +11,8 @@ import { Card } from "@/components/ui/card"
 
 export const texColor = (c: string, tex: string) => `\\htmlStyle{color: ${c}}{${tex}}`
 // a "\n" in the text stacks it, so a long label doesn't widen a narrow symbol like Σ
-export const texNote = (text: string) =>
-  `\\htmlClass{tex-note}{\\htmlStyle{color: var(--muted-foreground); font-family: var(--font-sans)}{\\substack{${text
+export const texNote = (text: string, color = "var(--muted-foreground)") =>
+  `\\htmlClass{tex-note}{\\htmlStyle{color: ${color}; font-family: var(--font-sans)}{\\substack{${text
     .split("\n")
     .map((l) => `\\text{${l}}`)
     .join("\\\\")}}}}`
@@ -62,11 +62,12 @@ export function SubBullets({ items }: { items: ReactNode[] }) {
   )
 }
 
-export function Accordion({ title, children }: { title: ReactNode; children: ReactNode }) {
+export function Accordion({ id, title, children }: { id?: string; title: ReactNode; children: ReactNode }) {
   return (
-    <details className="group rounded-xl border px-4 text-muted-foreground">
+    <details id={id} className="group scroll-mt-24 rounded-xl border px-4 text-muted-foreground">
       <summary className="flex cursor-pointer list-none items-center justify-between gap-3 py-3 font-medium text-foreground [&::-webkit-details-marker]:hidden">
-        {title}
+        {/* one flex item, so a title made of several pieces of text stays a single run */}
+        <span>{title}</span>
         <ChevronDown className="size-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
       </summary>
       <div className="pb-4">{children}</div>
@@ -88,7 +89,7 @@ export function M({ children }: { children: string }) {
   return <Tex className="text-foreground">{children}</Tex>
 }
 
-export function Figure({ caption, children }: { caption?: string; children: ReactNode }) {
+export function Figure({ caption, children }: { caption?: ReactNode; children: ReactNode }) {
   return (
     <figure className="mt-6">
       <Card className="gap-0 p-5 sm:p-6">
@@ -200,7 +201,7 @@ export function Slider({
 }: {
   value: number
   onChange: (v: number) => void
-  label: string
+  label: ReactNode
   min?: number
   max?: number
   step?: number
@@ -249,6 +250,24 @@ export function ExternalLink({ href, children }: { href: string; children: React
       target="_blank"
       rel="noreferrer"
       className="text-foreground underline decoration-muted-foreground/50 underline-offset-4 transition-colors hover:decoration-foreground"
+    >
+      {children}
+    </a>
+  )
+}
+
+// a link to an Accordion further down the same note: opens it and scrolls it into view
+export function AccordionLink({ to, children }: { to: string; children: ReactNode }) {
+  return (
+    <a
+      href={`#${to}`}
+      onClick={(e) => {
+        e.preventDefault()
+        const el = document.getElementById(to)
+        if (el instanceof HTMLDetailsElement) el.open = true
+        el?.scrollIntoView({ behavior: "smooth", block: "start" })
+      }}
+      className="underline decoration-muted-foreground/50 underline-offset-4 transition-colors hover:decoration-foreground"
     >
       {children}
     </a>
