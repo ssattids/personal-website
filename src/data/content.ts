@@ -364,6 +364,15 @@ export type Post = {
 
 export const posts: Post[] = [
   {
+    slug: "triplet-loss",
+    title: "Triplet loss",
+    summary: "Training embeddings from an anchor, a positive and a negative, and how a two-tower recommender computes it.",
+    tags: ["ML fundamentals", "loss functions", "metric learning"],
+    date: "Nov 2026",
+    readingTime: "6 min",
+    url: "/notes/triplet-loss",
+  },
+  {
     slug: "embeddings",
     title: "Embeddings",
     summary: "Turning inputs into vectors where closeness means similarity, and the two ways to measure it.",

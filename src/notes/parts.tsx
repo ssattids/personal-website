@@ -225,6 +225,36 @@ export function Slider({
   )
 }
 
+// a block of code; everything after a # on a line is drawn as a muted comment
+export function Code({ children }: { children: string }) {
+  return (
+    <pre className="mt-4 overflow-x-auto rounded-lg border bg-muted/40 px-4 py-3 font-mono text-xs leading-relaxed sm:text-sm">
+      {children.split("\n").map((line, i) => {
+        const at = line.indexOf("#")
+        return (
+          <div key={i}>
+            {at < 0 ? line || " " : line.slice(0, at)}
+            {at >= 0 && <span className="text-muted-foreground">{line.slice(at)}</span>}
+          </div>
+        )
+      })}
+    </pre>
+  )
+}
+
+export function ExternalLink({ href, children }: { href: string; children: ReactNode }) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noreferrer"
+      className="text-foreground underline decoration-muted-foreground/50 underline-offset-4 transition-colors hover:decoration-foreground"
+    >
+      {children}
+    </a>
+  )
+}
+
 export function NoteLink({ to, children }: { to: string; children: ReactNode }) {
   return (
     <Link
