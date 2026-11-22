@@ -364,6 +364,24 @@ export type Post = {
 
 export const posts: Post[] = [
   {
+    slug: "softmax",
+    title: "Softmax",
+    summary: "Turning any list of scores into probabilities that add up to 1, and how temperature makes it sharper or softer.",
+    tags: ["ML fundamentals", "transformers"],
+    date: "Nov 2026",
+    readingTime: "4 min",
+    url: "/notes/softmax",
+  },
+  {
+    slug: "attention",
+    title: "Attention, visually explained",
+    summary: "How each word decides which other words to listen to, with queries, keys and values you can click through.",
+    tags: ["ML fundamentals", "transformers", "LLMs"],
+    date: "Nov 2026",
+    readingTime: "7 min",
+    url: "/notes/attention",
+  },
+  {
     slug: "triplet-loss",
     title: "Triplet loss",
     summary: "Training embeddings from an anchor, a positive and a negative, and how a two-tower recommender computes it.",

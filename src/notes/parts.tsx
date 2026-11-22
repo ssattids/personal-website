@@ -21,6 +21,10 @@ export function H2({ children }: { children: ReactNode }) {
   return <h2 className="mt-16 text-2xl first:mt-0 font-semibold tracking-tight sm:text-3xl">{children}</h2>
 }
 
+export function H3({ children }: { children: ReactNode }) {
+  return <h3 className="mt-10 text-lg font-semibold tracking-tight sm:text-xl">{children}</h3>
+}
+
 // spaced-out section with a "§ 01" counter above the title
 export function Section({ children }: { children: ReactNode }) {
   return (
