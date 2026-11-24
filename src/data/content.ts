@@ -364,6 +364,24 @@ export type Post = {
 
 export const posts: Post[] = [
   {
+    slug: "euclidean-distance",
+    title: "Euclidean distance",
+    summary: "The straight-line distance between two embeddings, and how it finds nearest neighbours.",
+    tags: ["ML fundamentals", "metric learning"],
+    date: "Nov 2026",
+    readingTime: "3 min",
+    url: "/notes/euclidean-distance",
+  },
+  {
+    slug: "cosine-distance",
+    title: "Cosine distance",
+    summary: "Comparing two embeddings by the angle between them, ignoring how long they are.",
+    tags: ["ML fundamentals", "metric learning"],
+    date: "Nov 2026",
+    readingTime: "3 min",
+    url: "/notes/cosine-distance",
+  },
+  {
     slug: "sigmoid",
     title: "Sigmoid",
     summary: "Squashing any number into 0 to 1, why its gradient vanishes at the flat ends, and why inputs get normalized.",
@@ -402,7 +420,7 @@ export const posts: Post[] = [
   {
     slug: "embeddings",
     title: "Embeddings",
-    summary: "Turning inputs into vectors where closeness means similarity, and the two ways to measure it.",
+    summary: "Turning inputs into vectors where closeness means similarity.",
     tags: ["ML fundamentals", "metric learning"],
     date: "Nov 2026",
     readingTime: "5 min",
