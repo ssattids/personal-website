@@ -23,13 +23,15 @@ import {
 } from "@/notes/parts"
 
 // everywhere on the page the embeddings X are green, queries purple, keys orange and values blue, letters (x, q, k, v)
-// and words alike; scores (a query dotted with a key) are pink, and attention weights the foreground colour
+// and words alike; scores (a query dotted with a key) are pink, attention weights yellow, and a layer's output r teal
 const EMBED = "oklch(0.74 0.15 150)"
 const QUERY = "oklch(0.7 0.17 300)"
 const KEY = "oklch(0.74 0.16 55)"
 const VALUE = "oklch(0.7 0.14 240)"
 const SCORE = "oklch(0.72 0.17 350)"
 const WEIGHT = "oklch(0.85 0.16 95)"
+// r, what step 1's feed-forward network hands on to the next layer
+const FFN_OUT = "oklch(0.78 0.12 190)"
 
 // colours queries, keys and values wherever they're named in a string of prose: the words, their letters (Q or q, K or k,
 // V or v, and X or x for the embeddings), and the matrices W_Q, W_K, W_V, which come out with a coloured subscript
@@ -1733,7 +1735,7 @@ function LayerOverview() {
           </g>
         ))}
         {arrows(LO.ffn[1] + 4, LO.r - 4, 5)}
-        {rise(5, LO.r, "r", "var(--foreground)", LO_R, (v) => (v + 1) / 2)}
+        {rise(5, LO.r, "r", FFN_OUT, LO_R, (v) => (v + 1) / 2)}
         {arrows(LO.r + LO.cell + 4, LO.next[0] - 3, 6)}
 
         {/* layer 2, below: the same again */}
@@ -1768,11 +1770,11 @@ function LayerOverview() {
             </>
           ) : stage === 5 ? (
             <>
-              out comes <tspan className="fill-foreground">r</tspan> for each word
+              out comes <tspan fill={FFN_OUT}>r</tspan> for each word
             </>
           ) : stage === 6 ? (
             <>
-              <tspan className="fill-foreground">r</tspan> goes on into the next layer, which does the same again
+              <tspan fill={FFN_OUT}>r</tspan> goes on into the next layer, which does the same again
             </>
           ) : (
             <>one transformer layer, from the top down</>

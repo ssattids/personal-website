@@ -382,6 +382,15 @@ export const posts: Post[] = [
     url: "/notes/cosine-distance",
   },
   {
+    slug: "sigmoid",
+    title: "Sigmoid",
+    summary: "Squashing any number into 0 to 1, why its gradient vanishes at the flat ends, and why inputs get normalized.",
+    tags: ["ML fundamentals", "activation functions"],
+    date: "Nov 2026",
+    readingTime: "3 min",
+    url: "/notes/sigmoid",
+  },
+  {
     slug: "softmax",
     title: "Softmax",
     summary: "Turning any list of scores into probabilities that add up to 1, and how temperature makes it sharper or softer.",

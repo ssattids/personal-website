@@ -7,6 +7,7 @@ import { CrossEntropyNote } from "@/notes/cross-entropy-loss"
 import { EmbeddingsNote } from "@/notes/embeddings"
 import { EuclideanDistanceNote } from "@/notes/euclidean-distance"
 import { NegativeLogLikelihoodNote } from "@/notes/negative-log-likelihood"
+import { SigmoidNote } from "@/notes/sigmoid"
 import { SoftmaxNote } from "@/notes/softmax"
 import { TripletLossNote } from "@/notes/triplet-loss"
 
@@ -19,6 +20,7 @@ export const notes: Record<string, ComponentType> = {
   "embeddings": EmbeddingsNote,
   "euclidean-distance": EuclideanDistanceNote,
   "negative-log-likelihood": NegativeLogLikelihoodNote,
+  "sigmoid": SigmoidNote,
   "softmax": SoftmaxNote,
   "triplet-loss": TripletLossNote,
 }
