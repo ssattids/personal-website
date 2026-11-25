@@ -404,7 +404,7 @@ const HOLD = 2.4
 // `shown` items are revealed; each new `cycle` clears the figure. It only ticks while not paused, and, unless `onLoad`,
 // while the figure is on screen.
 // prev and next pause it and step between `stops` (every tick, unless given); next from the end starts a fresh cycle
-function useStepLoop(ref: RefObject<Element | null>, count: number, step = STEP, stops?: number[], onLoad = false) {
+export function useStepLoop(ref: RefObject<Element | null>, count: number, step = STEP, stops?: number[], onLoad = false) {
   const inView = useInView(ref, { amount: 0.5 })
   const reduce = useReducedMotion()
   const [paused, setPaused] = useState(false)

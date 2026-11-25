@@ -1,6 +1,7 @@
 import type { ComponentType } from "react"
 
 import { AttentionNote } from "@/notes/attention"
+import { AttentionVariantsNote } from "@/notes/attention-variants"
 import { ContrastiveLossNote } from "@/notes/contrastive-loss"
 import { CosineDistanceNote } from "@/notes/cosine-distance"
 import { CrossEntropyNote } from "@/notes/cross-entropy-loss"
@@ -14,6 +15,7 @@ import { TripletLossNote } from "@/notes/triplet-loss"
 // note bodies by post slug; each one also needs a matching entry in `posts`
 export const notes: Record<string, ComponentType> = {
   "attention": AttentionNote,
+  "attention-variants": AttentionVariantsNote,
   "contrastive-loss": ContrastiveLossNote,
   "cosine-distance": CosineDistanceNote,
   "cross-entropy-loss": CrossEntropyNote,
