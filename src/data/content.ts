@@ -364,6 +364,15 @@ export type Post = {
 
 export const posts: Post[] = [
   {
+    slug: "attention-variants",
+    title: "Self-attention, Cross-attention, and Masked Self-attention",
+    summary: "What queries, keys and values mean, and the three ways transformers wire them up.",
+    tags: ["ML fundamentals", "transformers", "LLMs"],
+    date: "Nov 2026",
+    readingTime: "5 min",
+    url: "/notes/attention-variants",
+  },
+  {
     slug: "euclidean-distance",
     title: "Euclidean distance",
     summary: "The straight-line distance between two embeddings, and how it finds nearest neighbours.",
