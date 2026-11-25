@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, type ReactNode } from "react"
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react"
 import { useInView, useReducedMotion } from "motion/react"
 import { ChevronDown } from "lucide-react"
 import { Link } from "react-router"
@@ -46,7 +46,7 @@ export function Bullets({ items }: { items: ReactNode[] }) {
       {items.map((t, i) => (
         <li key={i} className="flex gap-3 leading-relaxed">
           <span className="mt-2.5 size-1 shrink-0 rounded-full bg-foreground" />
-          <span>{t}</span>
+          <span className="min-w-0 flex-1">{t}</span>
         </li>
       ))}
     </ul>
@@ -59,7 +59,7 @@ export function SubBullets({ items }: { items: ReactNode[] }) {
       {items.map((t, i) => (
         <li key={i} className="flex gap-3 leading-relaxed">
           <span className="mt-2.5 size-1 shrink-0 rounded-full border border-foreground" />
-          <span>{t}</span>
+          <span className="min-w-0 flex-1">{t}</span>
         </li>
       ))}
     </ul>
@@ -91,6 +91,35 @@ export function Components({ items }: { items: ReactNode[] }) {
 
 export function M({ children }: { children: string }) {
   return <Tex className="text-foreground">{children}</Tex>
+}
+
+// a label that pops up above its children on hover or keyboard focus; it starts centred on them and is nudged
+// sideways when that would run off the edge of the window
+export function Tip({ tip, children }: { tip: ReactNode; children: ReactNode }) {
+  const ref = useRef<HTMLSpanElement>(null)
+  const [shift, setShift] = useState(0)
+  const place = () => {
+    const half = ref.current!.offsetWidth / 2
+    const term = ref.current!.parentElement!.getBoundingClientRect()
+    const centre = term.left + term.width / 2
+    // keep 8px clear of both edges of the window
+    const overLeft = 8 - (centre - half)
+    const overRight = centre + half - (window.innerWidth - 8)
+    setShift(overLeft > 0 ? overLeft : overRight > 0 ? -overRight : 0)
+  }
+  return (
+    <span tabIndex={0} onPointerEnter={place} onFocus={place} className="group/tip relative inline-block cursor-help outline-none">
+      {children}
+      <span
+        ref={ref}
+        role="tooltip"
+        style={{ transform: `translateX(calc(-50% + ${shift}px))` }}
+        className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 whitespace-nowrap rounded-md border bg-popover px-2 py-1 font-sans text-xs text-popover-foreground opacity-0 shadow-md transition-opacity group-hover/tip:opacity-100 group-focus-visible/tip:opacity-100"
+      >
+        {tip}
+      </span>
+    </span>
+  )
 }
 
 export function Figure({ caption, children }: { caption?: ReactNode; children: ReactNode }) {
