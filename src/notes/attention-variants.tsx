@@ -205,7 +205,25 @@ export function AttentionVariantsNote() {
           ]}
         />
         <Formula tex={CROSS_FORMULA} animate />
-        <Figure caption="Each French word attends to the English sentence. The weights trace out which word translates which.">
+        <Components
+          items={[
+            <>
+              <M>{"X_{\\text{dec}}"}</M> = the translation so far, from the decoder: it makes the <Query>queries</Query>
+            </>,
+            <>
+              <M>{"X_{\\text{enc}}"}</M> = the source sentence, from the encoder: it makes the <Key>keys</Key> and{" "}
+              <Value>values</Value>
+            </>,
+            <>
+              <M>{"W_Q, W_K, W_V"}</M> = learned weights that turn each word into its query, key and value
+            </>,
+            <>
+              <M>{"d_k"}</M> = the length of each key; dividing by <M>{"\\sqrt{d_k}"}</M> keeps the scores from growing too
+              large
+            </>,
+          ]}
+        />
+        <Figure caption={<ClickHint />}>
           <AttentionMap
             queries={TARGET}
             keys={SOURCE}
@@ -840,11 +858,13 @@ const MASK_FORMULA = [
   `+ \\underbrace{M}_{${texNote("0 for earlier words,\nminus infinity\nfor later ones")}} \\Big) ${V_}`,
 ].join(" ")
 
+// Q, K and V written out: the queries from the decoder, the keys and values from the encoder
 const CROSS_FORMULA = [
-  `${Q_} = \\underbrace{${texColor(EMBED, "X_{\\text{dec}}")}}_{${texNote("the translation\nso far", EMBED)}} W_Q`,
-  `${K_} = \\underbrace{${texColor(EMBED, "X_{\\text{enc}}")}}_{${texNote("the source\nsentence", EMBED)}} W_K`,
-  `${V_} = ${texColor(EMBED, "X_{\\text{enc}}")} W_V`,
-].join(" \\qquad ")
+  `\\text{Cross-attention} = \\mathrm{softmax} \\Big( \\dfrac{`,
+  `(${texColor(EMBED, "X_{\\text{dec}}")} ${texColor(QUERY, "W_Q")})`,
+  `(${texColor(EMBED, "X_{\\text{enc}}")} ${texColor(KEY, "W_K")})^{\\top}`,
+  `}{\\sqrt{d_k}} \\Big) \\, ${texColor(EMBED, "X_{\\text{enc}}")} ${texColor(VALUE, "W_V")}`,
+].join(" ")
 
 const CODE = `import torch
 
