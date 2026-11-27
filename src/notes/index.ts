@@ -2,6 +2,7 @@ import type { ComponentType } from "react"
 
 import { AttentionNote } from "@/notes/attention"
 import { AttentionVariantsNote } from "@/notes/attention-variants"
+import { BertParametersNote } from "@/notes/bert-parameters"
 import { ContrastiveLossNote } from "@/notes/contrastive-loss"
 import { CosineDistanceNote } from "@/notes/cosine-distance"
 import { CrossEntropyNote } from "@/notes/cross-entropy-loss"
@@ -16,6 +17,7 @@ import { TripletLossNote } from "@/notes/triplet-loss"
 export const notes: Record<string, ComponentType> = {
   "attention": AttentionNote,
   "attention-variants": AttentionVariantsNote,
+  "bert-parameters": BertParametersNote,
   "contrastive-loss": ContrastiveLossNote,
   "cosine-distance": CosineDistanceNote,
   "cross-entropy-loss": CrossEntropyNote,
