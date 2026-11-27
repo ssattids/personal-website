@@ -364,6 +364,15 @@ export type Post = {
 
 export const posts: Post[] = [
   {
+    slug: "bert-parameters",
+    title: "Visualize BERT's 110 million parameters",
+    summary: "Where every one of BERT-base's 110 million parameters lives, counted layer by layer.",
+    tags: ["ML fundamentals", "transformers"],
+    date: "Nov 2026",
+    readingTime: "2 min",
+    url: "/notes/bert-parameters",
+  },
+  {
     slug: "attention-variants",
     title: "Self-attention, Cross-attention, and Masked Self-attention",
     summary: "What queries, keys and values mean, and the three ways transformers wire them up.",
