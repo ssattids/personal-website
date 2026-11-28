@@ -403,8 +403,15 @@ const HOLD = 2.4
 // drives the step figures: reveals one item every `step` seconds, holds the finished figure, then starts over.
 // `shown` items are revealed; each new `cycle` clears the figure. It only ticks while not paused, and, unless `onLoad`,
 // while the figure is on screen.
-// prev and next pause it and step between `stops` (every tick, unless given); next from the end starts a fresh cycle
-export function useStepLoop(ref: RefObject<Element | null>, count: number, step = STEP, stops?: number[], onLoad = false) {
+// prev and next pause it and step between `stops` (every tick, unless given); next from the end starts a fresh cycle,
+// and, with `prevWraps`, prev from the start goes round to the end
+type StepLoopOptions = { stops?: number[]; onLoad?: boolean; prevWraps?: boolean }
+export function useStepLoop(
+  ref: RefObject<Element | null>,
+  count: number,
+  step = STEP,
+  { stops, onLoad = false, prevWraps = false }: StepLoopOptions = {},
+) {
   const inView = useInView(ref, { amount: 0.5 })
   const reduce = useReducedMotion()
   const [paused, setPaused] = useState(false)
@@ -426,7 +433,7 @@ export function useStepLoop(ref: RefObject<Element | null>, count: number, step 
     setLoop((l) => {
       // during the hold the figure already looks finished, so step from the end
       const at = Math.min(l.shown, count)
-      if (dir < 0) return { ...l, shown: marks.findLast((m) => m < at) ?? 0 }
+      if (dir < 0) return { ...l, shown: marks.findLast((m) => m < at) ?? (prevWraps ? marks.at(-1)! : 0) }
       const to = marks.find((m) => m > at)
       return to === undefined ? { cycle: l.cycle + 1, shown: 0 } : { ...l, shown: to }
     })
@@ -649,7 +656,7 @@ const W_TOP = QP.top + ((TOKENS.length - EMB_D) * QP.row) / 2
 function Projection({ kind }: { kind: keyof typeof PROJECTIONS }) {
   const p = PROJECTIONS[kind]
   const ref = useRef<SVGSVGElement>(null)
-  const { cycle, shown, reduce, controls } = useStepLoop(ref, TOKENS.length * ROW_TICKS, CELL_STEP, PROJ_STOPS)
+  const { cycle, shown, reduce, controls } = useStepLoop(ref, TOKENS.length * ROW_TICKS, CELL_STEP, { stops: PROJ_STOPS })
   // the cell being computed right now, if any: its row in X and Q, and its column in W_Q and Q
   // c is null once all of row k is done, while its q vector is held highlighted
   const tick = shown - 1
@@ -1830,7 +1837,7 @@ const EX_SUM_LAND = (TOKENS.length - 1) * EX_SUM_GAP + EX_SUM_FLY
 function ArcExplorer() {
   const [query, setQuery] = useState(0)
   const ref = useRef<SVGSVGElement>(null)
-  const { cycle, shown, reduce, controls, restart } = useStepLoop(ref, EX_TICKS, EX_STEP, undefined, true)
+  const { cycle, shown, reduce, controls, restart } = useStepLoop(ref, EX_TICKS, EX_STEP, { onLoad: true })
   const raw = K.map((k) => dot(Q[query], k))
   const scaled = raw.map((v) => v / Math.sqrt(D_K))
   const weights = softmax(scaled)
