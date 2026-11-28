@@ -1,10 +1,10 @@
 import { memo, useRef, type ReactNode } from "react"
-import { motion } from "motion/react"
+import { AnimatePresence, motion } from "motion/react"
 
 import { Tex } from "@/components/tex"
 import { cn } from "@/lib/utils"
 import { useStepLoop } from "@/notes/attention"
-import { Bullets, Figure, H2, M, NoteLink, Section } from "@/notes/parts"
+import { Accordion, Bullets, Figure, H2, M, Section } from "@/notes/parts"
 
 // embeddings green, as in the attention notes; the feed-forward network teal, as in the attention note. Attention
 // purple, the encoder layer yellow and the pooler orange are this note's own; the total is plain white, so it doesn't
@@ -54,6 +54,7 @@ const F = {
   DV: factor("d_v", HEAD_DIM),
   FF: factor(`4${D_MODEL}`, FF),
   TWO: factor("2", 2),
+  THREE: factor("3", 3),
 }
 
 // a weight matrix or bias vector, and the factors that multiply to its number of parameters. `oneHead`, for the
@@ -183,6 +184,12 @@ const LAYERS_TICK = tickOf("layers")
 const litBy = (s: Step) => (s.kind === "part" ? [s.id] : s.kind === "heads" ? ["qkv", "heads"] : s.lit)
 // a tensor's factors on a tick: one head's until the heads are counted
 const factorsAt = (t: Tensor, tick: number) => (t.oneHead && tick < HEADS_TICK ? t.oneHead : t.factors)
+// the parameters a tick counts: a box's weights, the heads' Q, K and V, or a sum
+const countAt = (tick: number) => {
+  const s = STEPS[tick - 1]
+  if (s.kind === "sum") return s.count
+  return part(s.kind === "heads" ? "qkv" : s.id).tensors.reduce((n, t) => n + size(factorsAt(t, tick)), 0)
+}
 
 // the table's rows, top down: a header over each group, then each tick's weights or sum. `tick` is when a row appears
 type Row =
@@ -207,59 +214,254 @@ const ROWS: Row[] = STEPS.flatMap((s, i): Row[] => {
   ]
 })
 
-const C = ({ c, children }: { c: string; children: ReactNode }) => <span style={{ color: c }}>{children}</span>
-// d_model in the captions' plain text
-const DModel = () => (
+// a shape a box takes in or gives out, as factors so its symbols and numbers can't disagree, and what it holds
+type Shape = [factors: Factor[], what: ReactNode]
+// a count bullet is a lead-in and the expression for its tick's count. Every one ends "resulting in {expression} =
+// {total} parameters.", the total being what the tick counts in the table, so the two can't disagree
+type Count = [lead: ReactNode, expression: string]
+type CaptionText = { why: ReactNode; input?: Shape; output?: Shape; count?: Count }
+// what the embeddings, and so BERT as a whole, take in
+const IDS: Shape = [
+  [F.P, F.THREE],
   <>
-    d<sub>model</sub>
-  </>
-)
-
-// what each tick says, under the figure
-const CAPTIONS: ReactNode[] = [
-  <>
-    BERT-base (L = 12, <DModel /> = 768, H = 12): count every weight matrix and bias
-  </>,
-  <>
-    token embeddings: a row of <DModel /> = 768 numbers for each of the V = 30,522 tokens
-  </>,
-  <>position embeddings: a row for each of the P = 512 positions</>,
-  <>segment embeddings: a row for sentence A and a row for sentence B</>,
-  <>
-    LayerNorm: a scale γ and a shift β for each of the <DModel /> = 768 numbers
-  </>,
-  <>
-    the <C c={EMBED}>embeddings</C>: 23.8 million, almost all of it the token table
-  </>,
-  <>Q, K and V: one attention head has its own 768 × 64 matrices and 64-number biases</>,
-  <>
-    <C c={ATTN}>H = 12 heads</C>, each with its own Q, K and V: 12 times as many parameters
-  </>,
-  <>attention out: the 12 heads' 64 numbers are joined back into 768, then mixed together</>,
-  <>add & LayerNorm: the residual add has no weights; the norm has its own γ and β</>,
-  <>
-    feed-forward up: W₁ widens each token from 768 to 4<DModel /> = 3,072 numbers
-  </>,
-  <>feed-forward down: W₂ narrows it from 3,072 back to 768</>,
-  <>add & LayerNorm: one more γ and β</>,
-  <>
-    one layer: 7.1 million, two thirds of it the <C c={FFN}>feed-forward network</C>
-  </>,
-  <>L = 12 layers, each with its own weights: 85 million</>,
-  <>
-    pooler: one <DModel /> × <DModel /> layer on the [CLS] token, for sentence-level tasks
-  </>,
-  <>
-    total: <C c={TOTAL}>109,482,240</C>, about 110 million
+    <M>{"P"}</M> token ids, <M>{"P"}</M> position ids and <M>{"P"}</M> segment ids for each token
   </>,
 ]
+// what each tick says, under the figure: where its count comes from, then, behind "Learn more", why its weights are
+// there, with the shapes its box takes in and gives out. The opening, before anything is counted, has only the why
+const CAPTION_TEXT: CaptionText[] = [
+  {
+    why: "Each box in the diagram holds weights and biases, numbers BERT learns in training. The table counts them box by box.",
+  },
+  {
+    why: "For each token in the sequence we look up its embedding or vector from a lookup table.",
+    input: [[F.P], "one token id for each position"],
+    output: [[F.P, F.DM], "the looked-up vector for each token"],
+    count: [
+      <>
+        There is a vector of size <M>{`${D_MODEL} = 768`}</M> for each token in our vocabulary of size{" "}
+        <M>{"V = 30{,}522"}</M>
+      </>,
+      "30{,}522 \\times 768",
+    ],
+  },
+  {
+    why: "Attention on its own doesn't see word order, so the position embeddings give each place in the input a learned vector too.",
+    input: [[F.P], "the position of each token, picking its row"],
+    output: [[F.P, F.DM], "a position vector for each token"],
+    count: [
+      <>
+        There is a vector of size <M>{`${D_MODEL} = 768`}</M> for each of the <M>{"P = 512"}</M> positions, the longest
+        input BERT can read
+      </>,
+      "512 \\times 768",
+    ],
+  },
+  {
+    why: "BERT is often given two sentences at once, like a question and a passage, so the segment embeddings mark which one each token is in.",
+    input: [[F.P], <>the segment of each token, A or B, picking one of the <M>{"S = 2"}</M> rows</>],
+    output: [[F.P, F.DM], "a segment vector for each token"],
+    count: [
+      <>
+        There is a vector of size <M>{`${D_MODEL} = 768`}</M> for each of the <M>{"S = 2"}</M> segments, sentence A and
+        sentence B
+      </>,
+      "2 \\times 768",
+    ],
+  },
+  {
+    why: "A token's three rows are added into one vector, and LayerNorm rescales it to mean 0 and variance 1, which keeps training stable.",
+    input: [
+      [F.P, F.DM],
+      <>
+        the maximum input sequence size of <M>{"P"}</M>, with each token of size <M>{D_MODEL}</M> being the sum of its
+        token lookup, position, and segment embeddings
+      </>,
+    ],
+    output: [[F.P, F.DM], "since it is a layer normalization and dimensions don't change"],
+    count: [
+      <>
+        There is a learned scale <M>{"\\gamma"}</M> and shift <M>{"\\beta"}</M> for each of the{" "}
+        <M>{`${D_MODEL} = 768`}</M> numbers
+      </>,
+      "2 \\times 768",
+    ],
+  },
+  {
+    why: (
+      <>
+        The embeddings hand the encoder one vector of <M>{`${D_MODEL} = 768`}</M> numbers per token: what it is{" "}
+        (<M>{"E_{\\text{tok}}"}</M>), where it sits (<M>{"E_{\\text{pos}}"}</M>), and which sentence it's in{" "}
+        (<M>{"E_{\\text{seg}}"}</M>).
+      </>
+    ),
+    input: IDS,
+    output: [[F.P, F.DM], "one vector per token for the first encoder layer"],
+    count: [
+      "We add up the four embedding boxes, the token table alone being 98% of them",
+      "23{,}440{,}896 + 393{,}216 + 1{,}536 + 1{,}536",
+    ],
+  },
+  {
+    why: "Attention lets tokens share information: each head gives every token a query to search with, a key to be found by and a value to pass on.",
+    input: [[F.P, F.DM], "the vector of each token coming into the layer"],
+    output: [[F.P, F.DQ], "one each for the head's queries, keys and values"],
+    count: [
+      <>
+        For one head, each of <M>{"W_Q, W_K, W_V"}</M> maps <M>{`${D_MODEL} = 768`}</M> numbers to{" "}
+        <M>{"d_q = d_k = d_v = 64"}</M> and has a 64-number bias
+      </>,
+      "3 \\times (768 \\times 64 + 64)",
+    ],
+  },
+  {
+    why: (
+      <>
+        With <M>{"H = 12"}</M> heads, each with its own <M>{"W_Q, W_K, W_V"}</M>, a token can look for 12 different
+        things at once, like the next word or a verb's object.
+      </>
+    ),
+    input: [[F.P, F.DM], "the same for every head"],
+    output: [[F.H, F.P, F.DQ], "one each for the queries, keys and values"],
+    count: [
+      <>
+        Each of the <M>{"H = 12"}</M> heads, only <M>{`${D_MODEL} / H = 64`}</M> wide, has its own{" "}
+        <M>{"W_Q, W_K, W_V"}</M>
+      </>,
+      "12 \\times 147{,}648",
+    ],
+  },
+  {
+    why: "The 12 heads each work alone, so attention out mixes their outputs together, letting what one found combine with what the others found.",
+    input: [[F.P, group(" \\cdot ", F.H, F.DV)], "the 12 heads' outputs for each token, joined end to end"],
+    output: [[F.P, F.DM], "one mixed vector per token"],
+    count: [
+      <>
+        The 12 heads' outputs of <M>{"d_v = 64"}</M> numbers join into <M>{"H \\cdot d_v = 768"}</M>, which{" "}
+        <M>{"W_O"}</M> maps to <M>{`${D_MODEL} = 768`}</M> with a 768-number bias
+      </>,
+      "768 \\times 768 + 768",
+    ],
+  },
+  {
+    why: "The residual add puts attention's output on top of each token's vector, so the layer refines it rather than replacing it. LayerNorm then rescales the sum.",
+    input: [[F.P, F.DM], "attention's output added to the layer's input, which has the same shape"],
+    output: [[F.P, F.DM], "since it is a layer normalization and dimensions don't change"],
+    count: [
+      <>
+        The add has no weights, and the LayerNorm has its own <M>{"\\gamma_1"}</M> and <M>{"\\beta_1"}</M> for each of
+        the <M>{`${D_MODEL} = 768`}</M> numbers
+      </>,
+      "2 \\times 768",
+    ],
+  },
+  {
+    why: "Attention shares information between tokens; the feed-forward network then works on each token alone, first widening it to make room for many features.",
+    input: [[F.P, F.DM], "each token's vector after attention"],
+    output: [[F.P, F.FF], "each token widened four times"],
+    count: [
+      <>
+        <M>{"W_1"}</M> maps each token's <M>{`${D_MODEL} = 768`}</M> numbers to <M>{`4${D_MODEL} = 3{,}072`}</M>, with
+        a 3,072-number bias
+      </>,
+      "768 \\times 3{,}072 + 3{,}072",
+    ],
+  },
+  {
+    why: "After a GELU, feed-forward down brings each token back to 768 numbers, so it can be added onto the token's vector.",
+    input: [[F.P, F.FF], "the widened tokens after the GELU"],
+    output: [[F.P, F.DM], "each token narrowed back, so it can be added onto its input"],
+    count: [
+      <>
+        <M>{"W_2"}</M> maps the <M>{`4${D_MODEL} = 3{,}072`}</M> numbers back to <M>{`${D_MODEL} = 768`}</M>, with a
+        768-number bias
+      </>,
+      "3{,}072 \\times 768 + 768",
+    ],
+  },
+  {
+    why: "As after attention, the feed-forward output is added onto each token's vector, and LayerNorm rescales the sum for the next layer.",
+    input: [[F.P, F.DM], "the feed-forward output added to its input"],
+    output: [[F.P, F.DM], "since it is a layer normalization and dimensions don't change"],
+    count: [
+      <>
+        Again the add has no weights, and this LayerNorm has its own <M>{"\\gamma_2"}</M> and <M>{"\\beta_2"}</M> for
+        each of the <M>{`${D_MODEL} = 768`}</M> numbers
+      </>,
+      "2 \\times 768",
+    ],
+  },
+  {
+    why: "That's one encoder layer: attention shares information between tokens, the feed-forward network works on each token, and an add & LayerNorm follows both.",
+    input: [[F.P, F.DM], "one vector per token"],
+    output: [[F.P, F.DM], "the same shape it takes in, which is what lets the layers stack"],
+    count: [
+      "Attention makes up a third of the layer, the feed-forward network two thirds and the two LayerNorms almost nothing",
+      "2{,}362{,}368 + 4{,}722{,}432 + 3{,}072",
+    ],
+  },
+  {
+    why: (
+      <>
+        One layer can only do so much, so BERT stacks <M>{"L = 12"}</M> layers, each building on what the one below it
+        found.
+      </>
+    ),
+    input: [[F.P, F.DM], "from the embeddings"],
+    output: [[F.P, F.DM], "each token's final vector, shaped by the whole input"],
+    count: [<>Each of the <M>{"L = 12"}</M> layers has its own weights</>, "12 \\times 7{,}087{,}872"],
+  },
+  {
+    why: "Tasks about the whole input, like classifying a review, need one vector for it; the pooler makes it from the final [CLS] token.",
+    input: [[F.DM], "the final vector of the [CLS] token"],
+    output: [[F.DM], "one vector standing for the whole input"],
+    count: [
+      <>
+        <M>{"W_{\\text{pool}}"}</M> maps the [CLS] token's <M>{`${D_MODEL} = 768`}</M> numbers to 768, with a
+        768-number bias
+      </>,
+      "768 \\times 768 + 768",
+    ],
+  },
+  {
+    why: "Every one of these numbers is learned: first in pre-training, mostly by predicting masked-out words, then adjusted again when BERT is fine-tuned for a task.",
+    input: IDS,
+    output: [[F.P, F.DM], <>a vector for each token, plus one of <M>{`${D_MODEL} = 768`}</M> from the pooler</>],
+    count: [
+      "We add up the embeddings, the 12 layers and the pooler, the layers being 78% of it",
+      "23{,}837{,}184 + 85{,}054{,}464 + 590{,}592",
+    ],
+  },
+]
+// a shape bullet: "Input dimensionality: {symbols} = {numbers}, {what}."
+const dimensions = (label: string, [factors, what]: Shape) => (
+  <>
+    {label} dimensionality: <M>{`${symbols(factors)} = ${numbers(factors)}`}</M>, {what}.
+  </>
+)
+// each tick's count bullet and background bullets. The opening has nothing to count, so its why stands in for the
+// count, and the figure never opens on an empty caption
+const CAPTIONS = CAPTION_TEXT.map(({ why, input, output, count }, tick): { count: ReactNode; background: ReactNode[] } => {
+  if (!count) return { count: why, background: [] }
+  const [lead, expression] = count
+  return {
+    count: (
+      <>
+        {lead}, resulting in <M>{`${expression} = ${texNum(countAt(tick))}`}</M> parameters.
+      </>
+    ),
+    background: [why, input && dimensions("Input", input), output && dimensions("Output", output)].filter(Boolean),
+  }
+})
 
-// what each symbol stands for, under the figure, in the order the figure brings them in
-const SIZES: [string, ReactNode][] = [
-  [`V = ${texNum(VOCAB)}`, "tokens in the vocabulary"],
-  [`${D_MODEL} = ${texNum(HIDDEN)}`, "numbers in each token's vector, the hidden size"],
-  [`P = ${texNum(POSITIONS)}`, "positions, the longest input in tokens"],
-  [`S = ${texNum(SEGMENTS)}`, "segments, sentence A and sentence B"],
+// what each symbol stands for, under the figure, in the order the figure brings them in, and what in the diagram uses
+// it, so the key can fade the symbols a step doesn't use
+type KeyRow = [string, ReactNode, string[]]
+const SIZES: KeyRow[] = [
+  [`V = ${texNum(VOCAB)}`, "tokens in the vocabulary", ["tok"]],
+  [`${D_MODEL} = ${texNum(HIDDEN)}`, "numbers in each token's vector, the hidden size", PARTS.map((p) => p.id)],
+  [`P = ${texNum(POSITIONS)}`, "positions, the longest input in tokens", ["pos"]],
+  [`S = ${texNum(SEGMENTS)}`, "segments, sentence A and sentence B", ["seg"]],
   [
     `d_q = d_k = d_v = ${texNum(HEAD_DIM)}`,
     <>
@@ -268,18 +470,22 @@ const SIZES: [string, ReactNode][] = [
         (each is <M>{`${D_MODEL} / H`}</M>)
       </span>
     </>,
+    ["qkv", "out"],
   ],
-  [`H = ${texNum(HEADS)}`, "number of attention heads"],
-  [`4${D_MODEL} = ${texNum(FF)}`, "the feed-forward network's width"],
-  [`L = ${texNum(LAYERS)}`, "encoder layers"],
+  // lit by the heads rather than by Q, K and V's box, which is counted for one head before H comes in
+  [`H = ${texNum(HEADS)}`, "number of attention heads", ["heads", "out"]],
+  [`4${D_MODEL} = ${texNum(FF)}`, "the feed-forward network's width", ["up", "down"]],
+  [`L = ${texNum(LAYERS)}`, "encoder layers", ["encoders"]],
 ]
-const WEIGHTS: [string, string][] = [
-  ["E", "an embedding table, one row per token, position or segment"],
-  ["\\gamma, \\beta", "a LayerNorm's scale and shift"],
-  ["W, b", "a weight matrix and a bias vector"],
-  ["W_Q, W_K, W_V", "make each head's queries, keys and values"],
-  ["W_O", "mixes the heads' outputs back together"],
-  ["W_1, W_2", "the feed-forward network's two layers"],
+const WEIGHTS: KeyRow[] = [
+  ["E_{\\text{tok}}", "the token embeddings, one row for each token in the vocabulary", ["tok"]],
+  ["E_{\\text{pos}}", "the position embeddings, one row for each position in the input", ["pos"]],
+  ["E_{\\text{seg}}", "the segment embeddings, one row for sentence A and one for sentence B", ["seg"]],
+  ["\\gamma, \\beta", "a LayerNorm's scale and shift", ["embNorm", "norm1", "norm2"]],
+  ["W, b", "a weight matrix and a bias vector", ["qkv", "out", "up", "down", "pool"]],
+  ["W_Q, W_K, W_V", "make each head's queries, keys and values", ["qkv"]],
+  ["W_O", "mixes the heads' outputs back together", ["out"]],
+  ["W_1, W_2", "the feed-forward network's two layers", ["up", "down"]],
 ]
 
 const fmt = (n: number) => n.toLocaleString("en-US")
@@ -304,23 +510,12 @@ export function BertParametersNote() {
       <Section>
         <H2>Background</H2>
         <Bullets
-          items={[
-            "BERT-base has about 110 million parameters: the weights and biases it learns in training.",
-            <>
-              It's an embedding table, then 12 identical encoder layers of{" "}
-              <NoteLink to="/notes/attention">self-attention</NoteLink> and a feed-forward network, then a small pooler.
-            </>,
-            <>
-              Three numbers describe it: <M>{"L = 12"}</M> layers, <M>{`${D_MODEL} = 768`}</M> numbers per token, and{" "}
-              <M>{"H = 12"}</M> attention heads. Those, plus the vocabulary, the input length and the two segments, set the
-              size of every matrix.
-            </>,
-          ]}
+          items={["BERT-base has about 110 million parameters: let us visualize where all these parameters come from."]}
         />
       </Section>
 
       <Section>
-        <H2>Counting the parameters</H2>
+        <H2>Visually counting the parameters</H2>
         <ParameterCount />
       </Section>
     </>
@@ -329,7 +524,7 @@ export function BertParametersNote() {
 
 function ParameterCount() {
   const ref = useRef<HTMLDivElement>(null)
-  const { shown, reduce, controls } = useStepLoop(ref, STEPS.length, STEP_SECONDS)
+  const { shown, reduce, controls } = useStepLoop(ref, STEPS.length, STEP_SECONDS, { prevWraps: true })
   // the tick on show; with reduced motion the finished count, nothing lit
   const tick = reduce ? STEPS.length : Math.min(shown, STEPS.length)
   const live = !reduce && shown <= STEPS.length
@@ -373,9 +568,9 @@ function ParameterCount() {
           </div>
         </div>
       </div>
-      <p className="mt-4 min-h-8 text-center font-mono text-xs text-muted-foreground">{CAPTIONS[tick]}</p>
+      <Caption tick={tick} />
       {controls}
-      <Key />
+      <Key lit={lit} />
     </Figure>
   )
 }
@@ -390,9 +585,9 @@ function Ledger({ tick, live }: { tick: number; live: boolean }) {
       <div className="grid w-full min-w-max grid-cols-[auto_1fr] gap-x-2 font-mono text-[11px] md:grid-cols-[auto_auto_auto_1fr] md:gap-x-3 [&_.katex]:text-[1.1em]">
         <div className={cn("col-span-2 grid grid-cols-subgrid pb-1 text-[10px] text-muted-foreground md:col-span-4", PAD_X)}>
           <span className={CELL.name}>weights</span>
-          <span className={CELL.size}>size</span>
+          <span className={CELL.size}>param size expression</span>
           <span className={CELL.nums}>in numbers</span>
-          <span className={CELL.count}>parameters</span>
+          <span className={CELL.count}>total parameters</span>
         </div>
         {ROWS.map((r, i) => {
           const on = r.tick <= tick
@@ -512,21 +707,60 @@ function Resized({ cell, tex, full, live }: { cell: string; tex: string; full: s
   )
 }
 
-function Key() {
-  const list = (items: [string, ReactNode][]) => (
-    <ul className="space-y-1 text-pretty">
-      {items.map(([sym, meaning]) => (
-        <li key={sym}>
-          <M>{sym}</M>
-          <span className="text-muted-foreground">: {meaning}</span>
-        </li>
+// the count shows, and the background waits behind "Learn more", which stays open or shut from one tick to the next
+function Caption({ tick }: { tick: number }) {
+  // every tick's bullets in the one cell, all but this tick's hidden, so the cell is always as tall as the longest and
+  // the controls under the caption never move
+  const stack = (bullets: ReactNode[][]) => (
+    <div className="grid">
+      {bullets.map((items, i) => (
+        <ul key={i} className={cn("col-start-1 row-start-1 space-y-0.5", i !== tick && "invisible")}>
+          {items.map((b, k) => (
+            <li key={k} className="flex gap-2.5 leading-relaxed">
+              <span className="mt-2 size-1 shrink-0 rounded-full bg-foreground" />
+              <span className="min-w-0 flex-1 text-pretty">{b}</span>
+            </li>
+          ))}
+        </ul>
       ))}
-    </ul>
+    </div>
+  )
+  return (
+    <div className="mt-4 space-y-1 text-xs text-muted-foreground [&_.katex]:text-[1.1em]">
+      <p className="font-medium text-foreground">Parameter count explanation:</p>
+      {stack(CAPTIONS.map((c) => [c.count]))}
+      {/* a tick with no background, the opening, hides "Learn more" but keeps its room, so the controls stay put */}
+      <div className={cn("pt-2", CAPTIONS[tick].background.length === 0 && "invisible")}>
+        <Accordion title="Learn more">{stack(CAPTIONS.map((c) => c.background))}</Accordion>
+      </div>
+    </div>
+  )
+}
+
+// while a step is on show, the symbols it doesn't use fade; with nothing lit, before the first step and once the count
+// is done, every symbol shows
+function Key({ lit }: { lit: Set<string> }) {
+  // each list under a heading set like the caption's
+  const list = (heading: string, items: KeyRow[]) => (
+    <div>
+      <p className="font-medium text-foreground">{heading}</p>
+      <ul className="mt-1 space-y-1 text-pretty">
+        {items.map(([sym, meaning, usedBy]) => {
+          const faded = lit.size > 0 && !usedBy.some((id) => lit.has(id))
+          return (
+            <li key={sym} className={cn("transition-opacity duration-300", faded && "opacity-40")}>
+              <M>{sym}</M>
+              <span className="text-muted-foreground">: {meaning}</span>
+            </li>
+          )
+        })}
+      </ul>
+    </div>
   )
   return (
     <div className="mt-5 grid gap-x-8 gap-y-4 border-t pt-4 text-xs sm:grid-cols-2 [&_.katex]:text-[1.1em]">
-      {list(SIZES)}
-      {list(WEIGHTS)}
+      {list("Weights notation:", WEIGHTS)}
+      {list("Parameter size notation:", SIZES)}
     </div>
   )
 }
@@ -553,7 +787,8 @@ const UP_Y = 154
 const NORM1_Y = 192
 const OUT_C = 246 // the attention-out box's centre, which stays put as it thickens
 const QKV_Y = 282
-const HEADS_LABEL = 322
+const QKV_FORK = 314 // where the line up from the embeddings splits for Q, K and V
+const HEADS_LABEL = 328 // under the fork
 const LAYER_BOTTOM = 334
 // the 12 layers, each collapsed to a box, one after another in the height the one drawn out takes
 const ENC_GAP = 6 // the wire from one layer up into the next
@@ -562,6 +797,7 @@ const EMB_TOP = 360
 const EMB_LABEL = 375
 const EMB_NORM_Y = 386
 const TABLES_Y = 440
+const TABLES_FORK = 471 // where the line up from the input tokens splits for the token and segment tables
 const EMB_BOTTOM = 478
 const TOK_C = 502 // the input tokens' centre
 
@@ -621,6 +857,28 @@ function Diagram({ lit, heads, thick, layers }: { lit: Set<string>; heads: boole
     animate: { attrY: layers ? encY(0) : LAYER_TOP, height: layers ? ENC_H : LAYER_BOTTOM - LAYER_TOP },
     transition: { ...move, delay: layers ? 0 : 0.1 },
   } as const
+  // the routes into each box, each drawn up from where its input comes from. Dashes march along the routes into what
+  // the step lights, so a sum's run into all it adds up; once the 12 layers are boxes, the routes inside one go with it
+  const straight = (x: number, from: number, to: number) => `M${x},${from} V${to}`
+  // from the middle of the input tokens, up the spine and along the fork under the tables, into table i
+  const table = (i: number) => `M${DX},${TOK_C - 11} V${TABLES_FORK} H${miniX(i)} V${TABLES_Y + BOX_H}`
+  const routes: Record<string, string[]> = {
+    tok: [table(0)],
+    pos: [table(1)],
+    seg: [table(2)],
+    embNorm: [0, 1, 2].map((i) => straight(miniX(i), TABLES_Y, EMB_NORM_Y + BOX_H)),
+    // from the embeddings, up the spine and along the fork under Q, K and V
+    qkv: [0, 1, 2].map((i) => `M${DX},${EMB_NORM_Y} V${QKV_FORK} H${miniX(i)} V${QKV_Y + BOX_H}`),
+    out: [0, 1, 2].map((i) => straight(miniX(i), QKV_Y, OUT_C + outH / 2)),
+    norm1: [straight(DX, OUT_C - outH / 2, NORM1_Y + NORM_H)],
+    up: [straight(DX, NORM1_Y, UP_Y + BOX_H)],
+    down: [straight(DX, UP_Y, DOWN_Y + BOX_H)],
+    norm2: [straight(DX, DOWN_Y, NORM2_Y + NORM_H)],
+    // from the embeddings up through all 12 layers
+    encoders: [straight(DX, EMB_NORM_Y, encY(LAYERS - 1) + ENC_H)],
+    pool: [straight(DX, encY(LAYERS - 1), POOL_Y + BOX_H)],
+  }
+  const flows = [...lit].filter((id) => !(layers && LAYER_IDS.includes(id))).flatMap((id) => routes[id] ?? [])
   const tokens = layoutTokens(INPUT, DX)
   const [x0, x1] = [tokens[0].x, tokens.at(-1)!.x + tokens.at(-1)!.width]
 
@@ -634,13 +892,10 @@ function Diagram({ lit, heads, thick, layers }: { lit: Set<string>; heads: boole
       {/* the encoder layer on a red ground, as the embeddings are on a green one */}
       <motion.rect {...layerShape} className={cn(wire(lit.has("layerGroup")), "fill-card")} />
       <motion.rect {...layerShape} fill={LAYER} opacity={0.06} />
-      <path d={`M${DX},${LAYER_BOTTOM} V${POOL_Y + BOX_H}`} strokeWidth={1.5} className={wire(lit.has("encoders"))} />
+      <path d={`M${DX},${LAYER_BOTTOM} V${POOL_Y + BOX_H}`} strokeWidth={1.5} className={wire(false)} />
       <motion.g initial={false} animate={{ opacity: layers ? 0 : 1 }} transition={{ duration: 0.2, delay: layers ? 0 : 0.3 }}>
         <text x={DX - GROUP_W / 2 + 8} y={LAYER_LABEL} fill={LAYER} className="font-mono text-[11px]">
-          encoder layer
-        </text>
-        <text x={DX + GROUP_W / 2 - 8} y={LAYER_LABEL} textAnchor="end" fill={LAYER} className="font-mono text-[11px]">
-          ×12
+          encoder
         </text>
         {box("norm2", DX, NORM2_Y, BOX_W, NORM_H, "add & LayerNorm")}
         {box("down", DX, DOWN_Y, BOX_W, BOX_H, "feed-forward down")}
@@ -648,6 +903,13 @@ function Diagram({ lit, heads, thick, layers }: { lit: Set<string>; heads: boole
         {box("norm1", DX, NORM1_Y, BOX_W, NORM_H, "add & LayerNorm")}
         {/* attention out thickens once every head's output is joined in it */}
         {box("out", DX, OUT_C - outH / 2, BOX_W, outH, "attention out")}
+        {/* the spine feeds K; this fork off it feeds Q and V, so each of the three gets the embeddings' output */}
+        <path
+          d={`M${miniX(0)},${QKV_Y + BOX_H} V${QKV_FORK} H${miniX(2)} V${QKV_Y + BOX_H}`}
+          fill="none"
+          strokeWidth={1.5}
+          className={wire(false)}
+        />
         {[0, 1, 2].map((i) => (
           <g key={i}>{cards(miniX(i))}</g>
         ))}
@@ -666,7 +928,51 @@ function Diagram({ lit, heads, thick, layers }: { lit: Set<string>; heads: boole
         </text>
       </motion.g>
 
-      {/* the 12 layers one after another, each one's output the next one's input */}
+      {/* the embeddings: three tables added together, then a LayerNorm */}
+      <rect
+        x={DX - GROUP_W / 2}
+        y={EMB_TOP}
+        width={GROUP_W}
+        height={EMB_BOTTOM - EMB_TOP}
+        rx={8}
+        className={cn(wire(lit.has("embGroup")), "fill-card")}
+      />
+      <rect x={DX - GROUP_W / 2} y={EMB_TOP} width={GROUP_W} height={EMB_BOTTOM - EMB_TOP} rx={8} fill={EMBED} opacity={0.06} />
+      <text x={DX - GROUP_W / 2 + 8} y={EMB_LABEL} fill={EMBED} className="font-mono text-[11px]">
+        embeddings
+      </text>
+      <path d={`M${DX},${EMB_BOTTOM} V${EMB_NORM_Y}`} strokeWidth={1.5} className={wire(false)} />
+      {[0, 2].map((i) => (
+        <path key={i} d={`M${miniX(i)},${TABLES_Y} V${EMB_NORM_Y + BOX_H}`} strokeWidth={1.5} className={wire(false)} />
+      ))}
+      {/* the spine feeds the position table; this fork off it feeds the token and segment tables */}
+      <path
+        d={`M${miniX(0)},${TABLES_Y + BOX_H} V${TABLES_FORK} H${miniX(2)} V${TABLES_Y + BOX_H}`}
+        fill="none"
+        strokeWidth={1.5}
+        className={wire(false)}
+      />
+
+      {/* dashes march up the routes into what the step counts */}
+      <AnimatePresence>
+        {flows.map((d) => (
+          <motion.path
+            key={d}
+            d={d}
+            fill="none"
+            strokeWidth={1.5}
+            strokeDasharray="4 6"
+            className="stroke-foreground"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1, strokeDashoffset: [20, 0] }}
+            exit={{ opacity: 0 }}
+            transition={{ opacity: { duration: 0.3 }, strokeDashoffset: { duration: 0.8, ease: "linear", repeat: Infinity } }}
+          />
+        ))}
+      </AnimatePresence>
+
+      {/* the 12 layers one after another, each one's output the next one's input. They're drawn over the dashes, which
+          show between them */}
       {Array.from({ length: LAYERS }, (_, i) => (
         <motion.g
           key={i}
@@ -691,23 +997,6 @@ function Diagram({ lit, heads, thick, layers }: { lit: Set<string>; heads: boole
         </motion.g>
       ))}
 
-      {/* the embeddings: three tables added together, then a LayerNorm */}
-      <rect
-        x={DX - GROUP_W / 2}
-        y={EMB_TOP}
-        width={GROUP_W}
-        height={EMB_BOTTOM - EMB_TOP}
-        rx={8}
-        className={cn(wire(lit.has("embGroup")), "fill-card")}
-      />
-      <rect x={DX - GROUP_W / 2} y={EMB_TOP} width={GROUP_W} height={EMB_BOTTOM - EMB_TOP} rx={8} fill={EMBED} opacity={0.06} />
-      <text x={DX - GROUP_W / 2 + 8} y={EMB_LABEL} fill={EMBED} className="font-mono text-[11px]">
-        embeddings
-      </text>
-      <path d={`M${DX},${EMB_BOTTOM} V${EMB_NORM_Y}`} strokeWidth={1.5} className={wire(false)} />
-      {[0, 2].map((i) => (
-        <path key={i} d={`M${miniX(i)},${TABLES_Y} V${EMB_NORM_Y + BOX_H}`} strokeWidth={1.5} className={wire(false)} />
-      ))}
       {box("embNorm", DX, EMB_NORM_Y, BOX_W, BOX_H, "LayerNorm")}
       {box("tok", miniX(0), TABLES_Y, MINI_W, BOX_H, "token", "text-[10px]")}
       {box("pos", miniX(1), TABLES_Y, MINI_W, BOX_H, "position", "text-[10px]")}
